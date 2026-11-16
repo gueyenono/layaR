@@ -1,7 +1,10 @@
 TARGET_DIR = ./rust/target
 LIBDIR = $(TARGET_DIR)/@LIBDIR@
 STATLIB = $(LIBDIR)/liblaya_r.a
-PKG_LIBS = -L$(LIBDIR) -llaya_r
+# -z noexecstack: ONNX Runtime's static library (via ort) contains an assembly
+# object without a .note.GNU-stack section, so the linker would mark layaR.so as
+# needing an executable stack, which current glibc refuses to dlopen.
+PKG_LIBS = -L$(LIBDIR) -llaya_r -Wl,-z,noexecstack
 
 all: $(SHLIB) rust_clean
 
