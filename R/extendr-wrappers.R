@@ -5,13 +5,53 @@
 #' @useDynLib layaR, .registration = TRUE
 NULL
 
-#' Load a Laya ONNX checkpoint directory.
-#' @param model_dir Path to an exported checkpoint directory.
+#' Load an exported checkpoint directory.
 #' @noRd
-rs_engine_new <- function(model_dir) .Call(wrap__rs_engine_new, model_dir)
+rs_engine_new <- function(model_dir, options_json) .Call(wrap__rs_engine_new, model_dir, options_json)
 
-#' Predict one state. Questions use the Python dict format.
+#' Checkpoint, layout, paths and sequence budgets of a loaded engine.
 #' @noRd
-rs_predict <- function(engine, state_json, questions_json) .Call(wrap__rs_predict, engine, state_json, questions_json)
+rs_engine_info <- function(engine) .Call(wrap__rs_engine_info, engine)
+
+#' Free the engine's ONNX session now. Idempotent.
+#' @noRd
+rs_engine_close <- function(engine) .Call(wrap__rs_engine_close, engine)
+
+#' TRUE when the engine can still run (not closed, not a stale pointer).
+#' @noRd
+rs_engine_is_live <- function(engine) .Call(wrap__rs_engine_is_live, engine)
+
+#' Answer every question about one state.
+#' @noRd
+rs_predict <- function(engine, state_json, questions_json, options_json) .Call(wrap__rs_predict, engine, state_json, questions_json, options_json)
+
+#' Answer every question about every state; `states_json` is a JSON array.
+#' @noRd
+rs_predict_batch <- function(engine, states_json, questions_json, options_json) .Call(wrap__rs_predict_batch, engine, states_json, questions_json, options_json)
+
+#' Scan one long state in overlapping windows.
+#' @noRd
+rs_predict_long <- function(engine, state_json, questions_json, options_json) .Call(wrap__rs_predict_long, engine, state_json, questions_json, options_json)
+
+#' Validate Python-format questions without a model; returns them normalized.
+#' @noRd
+rs_questions_validate <- function(questions_json) .Call(wrap__rs_questions_validate, questions_json)
+
+#' A built-in question set. `categories_json` is an ordered `{label: description}` object or
+#' null (email preset only).
+#' @noRd
+rs_preset <- function(name, categories_json) .Call(wrap__rs_preset, name, categories_json)
+
+#' Valid `min_confidence` bucket names.
+#' @noRd
+rs_bucket_keys <- function() .Call(wrap__rs_bucket_keys)
+
+#' TRUE when a directory holds a complete export (either layout).
+#' @noRd
+rs_artifacts_complete <- function(dir) .Call(wrap__rs_artifacts_complete, dir)
+
+#' Versions of the bridge and the Rust libraries it is built on.
+#' @noRd
+rs_versions <- function() .Call(wrap__rs_versions)
 
 # nolint end
