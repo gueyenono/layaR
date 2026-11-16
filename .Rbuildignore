@@ -8,3 +8,7 @@
 ^src/Makevars$
 ^src/Makevars\.win$
 ^README\.Rmd$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
