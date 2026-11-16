@@ -73,6 +73,13 @@ fn count(key: &str, v: &Value) -> BResult<usize> {
         .ok_or_else(|| bad(format!("{key} must be a non-negative integer")))
 }
 
+/// Python's `batch_size`: any integer, with zero or negative meaning "no cap".
+fn batch_size(v: &Value) -> BResult<Option<usize>> {
+    v.as_i64()
+        .map(|n| usize::try_from(n).ok().filter(|&n| n > 0))
+        .ok_or_else(|| bad("batch_size must be an integer".to_string()))
+}
+
 fn string(key: &str, v: &Value) -> BResult<String> {
     v.as_str()
         .map(str::to_string)
@@ -108,7 +115,7 @@ pub fn batch_options(json: &str) -> BResult<BatchOptions> {
     let mut o = BatchOptions::new();
     for (key, v) in &map {
         match key.as_str() {
-            "batch_size" => o.batch_size = Some(count(key, v)?),
+            "batch_size" => o.batch_size = batch_size(v)?,
             "sort_by_length" => o.sort_by_length = boolean(key, v)?,
             "min_confidence" => o.min_confidence = Some(min_confidence(v)?),
             "lang" => o.lang = Some(string(key, v)?),
@@ -128,7 +135,7 @@ pub fn long_options(json: &str) -> BResult<LongOptions> {
             "window" => o.window = Some(count(key, v)?),
             "stride" => o.stride = Some(count(key, v)?),
             "aggregate" => o.aggregate = Some(string(key, v)?),
-            "batch_size" => o.batch_size = Some(count(key, v)?),
+            "batch_size" => o.batch_size = batch_size(v)?,
             "lang" => o.lang = Some(string(key, v)?),
             _ => unreachable!(),
         }
@@ -247,7 +254,10 @@ mod tests {
         assert_eq!(b.batch_size, Some(8));
         assert!(b.sort_by_length);
         assert!(matches!(b.min_confidence, Some(MinConfidence::Map(ref m)) if m.len() == 2));
-        assert!(batch_options(r#"{"batch_size": -1}"#).is_err());
+        assert_eq!(batch_options(r#"{"batch_size": -1}"#).unwrap().batch_size, None);
+        assert_eq!(batch_options(r#"{"batch_size": 0}"#).unwrap().batch_size, None);
+        assert!(batch_options(r#"{"batch_size": 1.5}"#).is_err());
+        assert!(batch_options(r#"{"batch_size": true}"#).is_err());
 
         let l = long_options(r#"{"window": 512, "stride": 256, "aggregate": "auto"}"#).unwrap();
         assert_eq!((l.window, l.stride, l.aggregate.as_deref()), (Some(512), Some(256), Some("auto")));
