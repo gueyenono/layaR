@@ -72,8 +72,9 @@ The same applies to `cargo add laya-onnx` users, the .NET SDK and laya-ts.
 
 **Title:** `[feature]: laya-onnx: expose ort's load-dynamic (make download-binaries an optional default feature)`
 
-> **Status:** the Windows/GNU failure is confirmed (2026-11-16, PR gueyenono/layaR#1 CI), and its
-> error output is included below. Ready to post.
+**Posted 2026-11-16 as https://github.com/NandhaKishorM/laya/issues/1505**, with the confirmed
+Windows error, the exact ort default features, and the alternatives section updated (no fork for
+now).
 
 ### The problem
 
