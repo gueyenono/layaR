@@ -830,6 +830,14 @@ justification, examples and tests that run without a model, `rhub` and win-build
   of RAM.
 - A missing model directory gives a clean R error.
 
+**CI on the prototype (PR #1)**
+- All three Ubuntu builds pass, with ONNX Runtime included.
+- macOS initially failed because Apple's `ld` has no `-z`. `-z noexecstack` is now substituted
+  on Linux only, through `tools/config.R`.
+- **Windows is confirmed blocked:** `ort-sys@2.0.0-rc.13: no prebuilt binaries available for
+  target x86_64-pc-windows-gnu`. Upstream ask U2, or our own fork with `load-dynamic`, is
+  required for Windows.
+
 **extendr 0.9 API notes**
 - The prelude has no one-parameter `Result`; define a local alias.
 - `ExternalPtr<T>` needs `T: Debug`, and `LayaEngine` doesn't implement it, so wrap it in a

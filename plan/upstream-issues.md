@@ -72,10 +72,8 @@ The same applies to `cargo add laya-onnx` users, the .NET SDK and laya-ts.
 
 **Title:** `[feature]: laya-onnx: expose ort's load-dynamic (make download-binaries an optional default feature)`
 
-> **Recommendation:** post this after Phase 0, once a Windows build of the R prototype has run.
-> The Windows/GNU failure described below is what I expect, but I haven't confirmed it yet. If it
-> does fail, add the exact error output to "The problem". The request stands either way because
-> of CRAN, but a real error log makes it more convincing.
+> **Status:** the Windows/GNU failure is confirmed (2026-11-16, PR gueyenono/layaR#1 CI), and its
+> error output is included below. Ready to post.
 
 ### The problem
 
@@ -87,8 +85,14 @@ enables. So anyone embedding `laya-onnx` is locked into build-time downloads.
 That blocks two embedding scenarios:
 
 1. **CRAN (R) and similar offline build farms** forbid network access during package builds.
-2. **Windows with the GNU toolchain** (`x86_64-pc-windows-gnu`, which R uses via Rtools). ort's
-   prebuilt binaries target MSVC. *[Replace with the observed error after testing.]*
+2. **Windows with the GNU toolchain** (`x86_64-pc-windows-gnu`, which R uses via Rtools). There
+   are no prebuilt binaries for this target. Building `laya-onnx` at `80a1da1` on a GitHub Actions
+   `windows-latest` runner (Rtools 4.5, rustc 1.100) fails with:
+
+   ```
+   error: ort-sys@2.0.0-rc.13: no prebuilt binaries available for target x86_64-pc-windows-gnu
+   error: build script logged errors
+   ```
 
 ort already supports both cases through `load-dynamic`: the library is loaded at runtime from a
 path. That's how the CRAN `torch` package handles libtorch, and it's the pattern I'd use for the R

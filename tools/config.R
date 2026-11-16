@@ -97,7 +97,12 @@ if (file.exists(mv_ofp)) {
 mv_txt <- readLines(mv_fp)
 
 # replace placeholder values
+# -z noexecstack is a GNU ld option (Linux); Apple's ld rejects it. See
+# src/Makevars.in for why Linux needs it.
+.noexecstack <- if (Sys.info()[["sysname"]] == "Linux") "-Wl,-z,noexecstack" else ""
+
 new_txt <- gsub("@CRAN_FLAGS@", .cran_flags, mv_txt) |>
+  gsub("@NOEXECSTACK@", .noexecstack, x = _) |>
   gsub("@PROFILE@", .profile, x = _) |>
   gsub("@CLEAN_TARGET@", .clean_targets, x = _) |>
   gsub("@LIBDIR@", .libdir, x = _) |>
