@@ -16,7 +16,8 @@ SystemRequirements: Cargo (Rust's package manager), rustc >= 1.85.0, xz,
     OpenSSL headers on Linux (deb: libssl-dev, rpm: openssl-devel)
 Depends: 
     R (>= 4.2)
-Suggests: 
+Suggests:
+    parallel,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

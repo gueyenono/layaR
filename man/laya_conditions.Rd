@@ -17,7 +17,7 @@ Kinds from the engine: \code{io}, \code{json}, \code{artifacts_not_found},
 \code{invalid_question}, \code{invalid_config}, \code{checkpoint_mismatch}, \code{no_markers},
 \code{invalid_state}, \code{unsupported_aggregate}, \code{invalid_window},
 \code{not_supported}, \code{invalid_min_confidence}. Kinds from layaR itself:
-\code{model_not_found}, \code{invalid_argument}, \code{bridge_json},
+\code{model_not_found}, \code{invalid_argument}, \code{forked}, \code{bridge_json},
 \code{bridge_invalid_option}, \code{bridge_engine_closed}, \code{bridge_panic}.
 }
 \keyword{internal}

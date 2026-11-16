@@ -44,10 +44,16 @@ Most code never needs this: the prediction functions default to
 keeps it for the session.
 
 Engines can't be sent to other processes. An engine restored with
-\code{readRDS()}, or used in a PSOCK worker, reconnects to its model directory
-on first use, which loads the model again in that process. Don't use
-engines across \code{fork()} (e.g. \code{parallel::mclapply()}): ONNX Runtime's
-thread pools don't survive it.
+\code{readRDS()}, or used in a PSOCK worker (\code{parallel::makePSOCKcluster()},
+\code{future::multisession}), reconnects to its model directory on first use,
+which loads the model again in that process (another 1 to 1.5 GB each).
+
+Engines don't work across \code{fork()} (\code{parallel::mclapply()},
+\code{future::multicore}): ONNX Runtime's thread pools don't survive it, so a
+forked child could hang. Using an engine in a forked child raises a
+\code{laya_error_forked} error instead. A single engine already runs one forward
+pass on several cores; for more throughput use \code{\link[=laya_predict_batch]{laya_predict_batch()}}, or
+PSOCK workers that each load their own engine.
 }
 \examples{
 if (laya_model_available()) {
