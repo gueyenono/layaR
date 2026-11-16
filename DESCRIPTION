@@ -12,7 +12,8 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Config/rextendr/version: 0.5.0
-SystemRequirements: Cargo (Rust's package manager), rustc >= 1.85.0, xz
+SystemRequirements: Cargo (Rust's package manager), rustc >= 1.85.0, xz,
+    OpenSSL headers on Linux (deb: libssl-dev, rpm: openssl-devel)
 Depends: 
     R (>= 4.2)
 Suggests: 
