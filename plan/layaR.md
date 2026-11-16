@@ -793,6 +793,49 @@ justification, examples and tests that run without a model, `rhub` and win-build
 
 ---
 
+## 10a. Phase 0 findings (2026-11-16)
+
+**Model export** (multilingual, CPU, `--verify`)
+- Took 2 min, with a peak of 6.6 GB of RAM.
+- Output: `~/.cache/R/layaR/onnx/multilingual`, 1.3 GB.
+- Verification passed: max logit difference against PyTorch was 4.8e-6 across 36 shape
+  combinations.
+
+**Dependency**
+- `laya-onnx` is **not on crates.io**, despite its README. It's pinned through git to commit
+  `80a1da1` (release 0.4.34).
+- `ort` is pinned to `=2.0.0-rc.13`. Without the pin, Cargo picks rc.15, unlike upstream's
+  lockfile.
+
+**Linking (Linux)**
+- `download-binaries` fetches a **static** `libonnxruntime.a`, so there's no runtime `.so` to
+  locate.
+- `layaR.so` is 121 MB, and `target/` is 885 MB.
+- The link needs `-Wl,-z,noexecstack`, because one ONNX Runtime assembly object lacks
+  `.note.GNU-stack` and glibc refuses an executable-stack `.so`.
+
+**OpenSSL at build time**
+- `ort-sys`'s download uses `ureq` with native TLS, so Linux builds need OpenSSL headers
+  (`libssl-dev`). Add it to `SystemRequirements`.
+- On this Nix machine, set `OPENSSL_LIB_DIR`, `OPENSSL_INCLUDE_DIR` and `LD_LIBRARY_PATH` to a
+  Nix OpenSSL. A dev `.envrc` or a note in `CONTRIBUTING` should cover this.
+
+**rextendr 0.5.0 output needed two fixes**
+- The init routine name was wrong for the mixed-case package name.
+- The `configure` shebang was the local Nix path for `sh`.
+
+**Prototype results**
+- R's output is **identical** to Python's golden result on `case_arabic`.
+- Engine load takes 6.7 s, `predict` about 290 ms on CPU, and the R process uses about 1.0 GB
+  of RAM.
+- A missing model directory gives a clean R error.
+
+**extendr 0.9 API notes**
+- The prelude has no one-parameter `Result`; define a local alias.
+- `ExternalPtr<T>` needs `T: Debug`, and `LayaEngine` doesn't implement it, so wrap it in a
+  newtype with a manual `Debug`.
+- `IndexMap` isn't `Serialize` without indexmap's `serde` feature, so encode it by hand.
+
 ## 11. Upstream asks (NandhaKishorM/laya)
 
 Each of these makes layaR simpler and helps every other binding. Per decision 5, raise them as
