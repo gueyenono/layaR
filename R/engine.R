@@ -169,7 +169,7 @@ format.laya_engine <- function(x, ...) {
   info <- x$info
   state <- if (isTRUE(x$closed)) " (closed)" else ""
   c(
-    sprintf("<laya_engine> %s · %s ONNX · max_len %s · head_max_len %s%s",
+    sprintf("<laya_engine> %s \u00b7 %s ONNX \u00b7 max_len %s \u00b7 head_max_len %s%s",
             info$checkpoint %||% (if (is.na(x$checkpoint %||% NA)) "custom" else x$checkpoint),
             info$layout %||% "?",
             info$max_len %||% "?", info$head_max_len %||% "?", state),

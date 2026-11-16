@@ -148,11 +148,11 @@ laya_answer <- function(x, id) {
 #' @export
 format.laya_result <- function(x, ...) {
   n <- length(x$answers)
-  head <- sprintf("<laya_result> %s · %d answer%s · %s input tokens",
+  head <- sprintf("<laya_result> %s \u00b7 %d answer%s \u00b7 %s input tokens",
                   x$model %||% "?", n, if (n == 1) "" else "s",
                   format(x$usage$input_tokens %||% NA))
-  if (isTRUE(as.logical(x$usage$truncated))) head <- paste0(head, " · state truncated")
-  if (!is.null(x$usage$windows)) head <- paste0(head, sprintf(" · %d windows", x$usage$windows))
+  if (isTRUE(as.logical(x$usage$truncated))) head <- paste0(head, " \u00b7 state truncated")
+  if (!is.null(x$usage$windows)) head <- paste0(head, sprintf(" \u00b7 %d windows", x$usage$windows))
   if (!n) return(head)
   ids <- format(names(x$answers))
   lines <- vapply(seq_len(n), function(i) {
@@ -160,8 +160,8 @@ format.laya_result <- function(x, ...) {
     detail <- switch(
       a$type,
       choice = sprintf("%-14s p %.2f", truncate_text(a$choice, 14), a$probabilities[[a$choice]]),
-      score = sprintf("%-14s", sprintf("%.2f (0–%d)", a$score, length(a$legend) - 1L)),
-      noul = sprintf("%-14s", sprintf("%.2f → %s", a$noul, if (a$noul >= 0.5) "TRUE" else "FALSE")),
+      score = sprintf("%-14s", sprintf("%.2f (0\u2013%d)", a$score, length(a$legend) - 1L)),
+      noul = sprintf("%-14s", sprintf("%.2f \u2192 %s", a$noul, if (a$noul >= 0.5) "TRUE" else "FALSE")),
       ""
     )
     gate <- if (!is.null(a$abstention)) paste0("  [", a$abstention, "]") else ""
@@ -223,7 +223,7 @@ format.laya_batch_result <- function(x, ...) {
   if (!n) return(head)
   ids <- names(x[[1]]$answers)
   tokens <- sum(vapply(x, function(r) as.numeric(r$usage$input_tokens %||% 0), numeric(1)))
-  c(paste0(head, sprintf(" · %d question%s · %s input tokens",
+  c(paste0(head, sprintf(" \u00b7 %d question%s \u00b7 %s input tokens",
                          length(ids), if (length(ids) == 1) "" else "s", format(tokens))),
     paste0("  questions: ", truncate_text(paste(ids, collapse = ", "), 70)),
     "  use as.data.frame() for one row per state and question")

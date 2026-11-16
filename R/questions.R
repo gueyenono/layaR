@@ -330,5 +330,5 @@ is_scalar_text <- function(x) {
 
 truncate_text <- function(x, n) {
   x <- gsub("\\s+", " ", x)
-  if (nchar(x) > n) paste0(substr(x, 1, n - 1), "…") else x
+  if (nchar(x) > n) paste0(substr(x, 1, n - 1), "\u2026") else x
 }
