@@ -88,7 +88,7 @@ test_that("laya_download_model fetches a published export", {
 
   expect_message(dest <- laya_download_model("multilingual", repo = "me/laya-onnx", ask = FALSE),
                  "Installed")
-  expect_identical(dest, laya_model_path("multilingual"))
+  expect_identical(normalizePath(dest), normalizePath(laya_model_path("multilingual")))
   expect_true(laya_model_available("multilingual"))
   expect_false(dir.exists(file.path(laya_model_root(), ".download-multilingual")))
   expect_message(laya_download_model("multilingual", repo = "me/laya-onnx", ask = FALSE),
