@@ -13,3 +13,4 @@
 ^docs$
 ^pkgdown$
 ^vignettes/.*\.Rmd\.orig$
+^vignettes/articles$

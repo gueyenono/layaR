@@ -20,6 +20,17 @@ test_that("laya_annotate checks its arguments before predicting", {
   expect_error(laya_annotate(list(a = 1), qs, "a", engine = eng), class = "laya_error_invalid_argument")
   expect_error(laya_annotate(tickets, qs, engine = eng), class = "laya_error_invalid_argument")
   expect_error(laya_annotate(tickets, qs, "nope", engine = eng), "nope")
+  # Bare names, dplyr style: whether they fail to evaluate or find another object
+  # (`body` is a base function), the error says to quote them.
+  expect_error(laya_annotate(tickets, qs, c(subject, body), engine = eng),
+               'state = c\\("subject", "body"\\)', class = "laya_error_invalid_argument")
+  expect_error(laya_annotate(tickets, qs, body, engine = eng),
+               'state = "body"', class = "laya_error_invalid_argument")
+  cols <- c("subject", "body")
+  # A variable holding names is fine: the call gets past `state` to the `prefix` check.
+  expect_error(laya_annotate(tickets, qs, cols, engine = eng, prefix = NA), "prefix")
+  expect_error(laya_annotate(tickets, qs, 1, engine = eng), "must name the column")
+  expect_error(laya_annotate(tickets, qs, stop("boom"), engine = eng), "boom")
   clash <- transform(tickets, urgency = 1)
   expect_error(laya_annotate(clash, qs, "body", engine = eng), "prefix")
 })
@@ -44,6 +55,15 @@ test_that("laya_annotate adds typed answer columns", {
                    c("laya_churn_risk", "laya_churn_risk_abstained", "laya_churn_risk_probabilities"))
   expect_named(one$laya_churn_risk_probabilities[[1]], c("false", "true"))
   expect_type(one$laya_churn_risk_abstained, "logical")
+
+  # answer_confidence: what the gate compares, i.e. the chosen option's probability.
+  ac <- laya_annotate(tickets, qs["department"], state = "body", confidence = FALSE,
+                      answer_confidence = TRUE, probabilities = TRUE, progress = FALSE)
+  expect_identical(setdiff(names(ac), names(tickets)),
+                   c("department", "department_answer_confidence", "department_probabilities"))
+  chosen <- mapply(function(p, k) if (is.na(k)) NA_real_ else p[[k]],
+                   ac$department_probabilities, as.character(ac$department))
+  expect_equal(ac$department_answer_confidence, unname(chosen), tolerance = 1e-3)
 
   skip_if_not_installed("tibble")
   tb <- laya_annotate(tibble::as_tibble(tickets[1:2, ]), qs["department"], "body", progress = FALSE)

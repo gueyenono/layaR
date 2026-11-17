@@ -198,8 +198,9 @@ send it to a person instead:
 
 ``` r
 vague <- "Hi, quick question about my account."
-as.data.frame(laya_predict(vague, questions, min_confidence = 0.8))[
-  , c("id", "answer", "confidence", "abstention")]
+laya_predict(vague, questions, min_confidence = 0.8) |>
+  as.data.frame() |>
+  subset(select = c(id, answer, confidence, abstention))
 #>           id  answer confidence abstention
 #> 1 department billing     0.1485  abstained
 #> 2    urgency    1.78     0.4988  abstained

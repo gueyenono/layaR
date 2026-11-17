@@ -16,12 +16,14 @@
 #' logical `<id>_abstained` column. The answer is kept either way; filter on
 #' the column to drop low-confidence answers. The gate compares the threshold
 #' with each answer's `answer_confidence` (for a choice question, the chosen
-#' option's probability), which can differ from the `<id>_confidence` column.
+#' option's probability), which can differ from the `<id>_confidence` column;
+#' `answer_confidence = TRUE` adds it as a `<id>_answer_confidence` column.
 #'
 #' @param data A data frame or tibble. A tibble stays a tibble.
 #' @param questions A question set ([laya_questions()], a preset, or anything
 #'   [as_laya_questions()] accepts).
-#' @param state The column or columns the model reads. With one column, its
+#' @param state The name or names of the column(s) the model reads, as strings
+#'   (`"text"`, `c("subject", "body")`), not bare names. With one column, its
 #'   text is the state as is. With several, each row becomes a structured
 #'   state such as `{"subject": ..., "body": ...}`, which keeps the field
 #'   names as context for the model.
@@ -30,6 +32,10 @@
 #'   `batch_size`, `chunk_size`, `progress` and the token budgets.
 #' @param prefix A prefix for the new column names, for example `"laya_"`.
 #' @param confidence Add a `<id>_confidence` column per question?
+#' @param answer_confidence Add a `<id>_answer_confidence` column per
+#'   question: the confidence in the answer given, which `min_confidence`
+#'   compares with its threshold. For a choice question it is the chosen
+#'   option's probability.
 #' @param probabilities Add a `<id>_probabilities` list-column per question,
 #'   holding each option's probability as a named numeric vector?
 #' @return `data` with the new columns. Rows whose state columns are all
@@ -50,14 +56,31 @@
 #' }
 #' @export
 laya_annotate <- function(data, questions, state, engine = laya_default_engine(), ...,
-                          prefix = "", confidence = TRUE, probabilities = FALSE) {
+                          prefix = "", confidence = TRUE, answer_confidence = FALSE,
+                          probabilities = FALSE) {
   if (!is.data.frame(data)) {
     laya_abort("{.arg data} must be a data frame.", kind = "invalid_argument")
   }
   questions <- as_laya_questions(questions)
-  if (missing(state) || !is.character(state) || !length(state) || anyNA(state)) {
-    laya_abort(c("{.arg state} must name the column(s) the model reads.",
-                 i = "For example {.code state = \"text\"} or {.code state = c(\"subject\", \"body\")}."),
+  state_hint <- c(i = "For example {.code state = \"text\"} or {.code state = c(\"subject\", \"body\")}.")
+  if (missing(state)) {
+    laya_abort(c("{.arg state} must name the column(s) the model reads.", state_hint),
+               kind = "invalid_argument")
+  }
+  state_expr <- substitute(state)
+  state <- tryCatch(state, error = function(e) e)
+  if (inherits(state, "error") || !is.character(state) || !length(state) || anyNA(state)) {
+    # Bare column names, as in dplyr: `state = c(subject, body)` either fails to
+    # evaluate or finds an unrelated object (`body` is a base function).
+    bare <- bare_names(state_expr)
+    if (length(bare) && (inherits(state, "error") || any(bare %in% names(data)))) {
+      suggestion <- paste(deparse(bare), collapse = "")
+      laya_abort(c("{.arg state} takes column names as strings, not bare names.",
+                   i = "Use {.code state = {suggestion}}."),
+                 kind = "invalid_argument")
+    }
+    if (inherits(state, "error")) stop(state)
+    laya_abort(c("{.arg state} must name the column(s) the model reads.", state_hint),
                kind = "invalid_argument")
   }
   unknown <- setdiff(state, names(data))
@@ -70,7 +93,8 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
 
   ids <- names(questions)
   new_cols <- paste0(prefix, ids)
-  clash <- intersect(c(new_cols, paste0(new_cols, "_confidence"), paste0(new_cols, "_abstained"),
+  clash <- intersect(c(new_cols, paste0(new_cols, "_confidence"),
+                       paste0(new_cols, "_answer_confidence"), paste0(new_cols, "_abstained"),
                        paste0(new_cols, "_probabilities")), names(data))
   if (length(clash)) {
     laya_abort(c("{.arg data} already has column{?s} {.val {clash}}.",
@@ -104,6 +128,10 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
       data[[paste0(new_cols[[k]], "_confidence")]] <-
         vapply(answers, function(a) as.numeric(a$confidence %||% NA_real_), numeric(1))
     }
+    if (isTRUE(answer_confidence)) {
+      data[[paste0(new_cols[[k]], "_answer_confidence")]] <-
+        vapply(answers, function(a) as.numeric(a$answer_confidence %||% NA_real_), numeric(1))
+    }
     if (any(vapply(answers, function(a) !is.null(a$abstention), logical(1)))) {
       data[[paste0(new_cols[[k]], "_abstained")]] <-
         vapply(answers, function(a) if (is.null(a$abstention)) NA else a$abstention == "abstained",
@@ -114,6 +142,18 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
     }
   }
   data
+}
+
+# The names in `x` or `c(x, y)`, or character(0) for any other expression.
+bare_names <- function(expr) {
+  if (is.symbol(expr)) return(as.character(expr))
+  if (is.call(expr) && identical(expr[[1]], quote(c)) && length(expr) > 1) {
+    args <- as.list(expr)[-1]
+    if (is.null(names(args)) && all(vapply(args, is.symbol, logical(1)))) {
+      return(vapply(args, as.character, character(1)))
+    }
+  }
+  character(0)
 }
 
 answer_column <- function(q, answers) {
