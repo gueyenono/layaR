@@ -1,5 +1,9 @@
 # layaR (development version)
 
+* `laya_annotate()` gains `answer_confidence`, which adds an
+  `<id>_answer_confidence` column: the confidence in the answer given (for a
+  choice question, the chosen option's probability), the number
+  `min_confidence` compares with its threshold.
 * `laya_annotate()` explains that `state` takes column names as strings when
   given bare names (`state = c(subject, body)`), instead of failing with
   "object not found".

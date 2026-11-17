@@ -12,6 +12,7 @@ laya_annotate(
   ...,
   prefix = "",
   confidence = TRUE,
+  answer_confidence = FALSE,
   probabilities = FALSE
 )
 }
@@ -35,6 +36,11 @@ names as context for the model.}
 \item{prefix}{A prefix for the new column names, for example \code{"laya_"}.}
 
 \item{confidence}{Add a \verb{<id>_confidence} column per question?}
+
+\item{answer_confidence}{Add a \verb{<id>_answer_confidence} column per
+question: the confidence in the answer given, which \code{min_confidence}
+compares with its threshold. For a choice question it is the chosen
+option's probability.}
 
 \item{probabilities}{Add a \verb{<id>_probabilities} list-column per question,
 holding each option's probability as a named numeric vector?}
@@ -60,7 +66,8 @@ With \code{min_confidence} (passed in \code{...}), each gated answer also gets a
 logical \verb{<id>_abstained} column. The answer is kept either way; filter on
 the column to drop low-confidence answers. The gate compares the threshold
 with each answer's \code{answer_confidence} (for a choice question, the chosen
-option's probability), which can differ from the \verb{<id>_confidence} column.
+option's probability), which can differ from the \verb{<id>_confidence} column;
+\code{answer_confidence = TRUE} adds it as a \verb{<id>_answer_confidence} column.
 }
 \examples{
 if (laya_model_available()) {

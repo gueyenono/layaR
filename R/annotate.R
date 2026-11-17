@@ -16,7 +16,8 @@
 #' logical `<id>_abstained` column. The answer is kept either way; filter on
 #' the column to drop low-confidence answers. The gate compares the threshold
 #' with each answer's `answer_confidence` (for a choice question, the chosen
-#' option's probability), which can differ from the `<id>_confidence` column.
+#' option's probability), which can differ from the `<id>_confidence` column;
+#' `answer_confidence = TRUE` adds it as a `<id>_answer_confidence` column.
 #'
 #' @param data A data frame or tibble. A tibble stays a tibble.
 #' @param questions A question set ([laya_questions()], a preset, or anything
@@ -31,6 +32,10 @@
 #'   `batch_size`, `chunk_size`, `progress` and the token budgets.
 #' @param prefix A prefix for the new column names, for example `"laya_"`.
 #' @param confidence Add a `<id>_confidence` column per question?
+#' @param answer_confidence Add a `<id>_answer_confidence` column per
+#'   question: the confidence in the answer given, which `min_confidence`
+#'   compares with its threshold. For a choice question it is the chosen
+#'   option's probability.
 #' @param probabilities Add a `<id>_probabilities` list-column per question,
 #'   holding each option's probability as a named numeric vector?
 #' @return `data` with the new columns. Rows whose state columns are all
@@ -51,7 +56,8 @@
 #' }
 #' @export
 laya_annotate <- function(data, questions, state, engine = laya_default_engine(), ...,
-                          prefix = "", confidence = TRUE, probabilities = FALSE) {
+                          prefix = "", confidence = TRUE, answer_confidence = FALSE,
+                          probabilities = FALSE) {
   if (!is.data.frame(data)) {
     laya_abort("{.arg data} must be a data frame.", kind = "invalid_argument")
   }
@@ -87,7 +93,8 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
 
   ids <- names(questions)
   new_cols <- paste0(prefix, ids)
-  clash <- intersect(c(new_cols, paste0(new_cols, "_confidence"), paste0(new_cols, "_abstained"),
+  clash <- intersect(c(new_cols, paste0(new_cols, "_confidence"),
+                       paste0(new_cols, "_answer_confidence"), paste0(new_cols, "_abstained"),
                        paste0(new_cols, "_probabilities")), names(data))
   if (length(clash)) {
     laya_abort(c("{.arg data} already has column{?s} {.val {clash}}.",
@@ -120,6 +127,10 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
     if (isTRUE(confidence)) {
       data[[paste0(new_cols[[k]], "_confidence")]] <-
         vapply(answers, function(a) as.numeric(a$confidence %||% NA_real_), numeric(1))
+    }
+    if (isTRUE(answer_confidence)) {
+      data[[paste0(new_cols[[k]], "_answer_confidence")]] <-
+        vapply(answers, function(a) as.numeric(a$answer_confidence %||% NA_real_), numeric(1))
     }
     if (any(vapply(answers, function(a) !is.null(a$abstention), logical(1)))) {
       data[[paste0(new_cols[[k]], "_abstained")]] <-

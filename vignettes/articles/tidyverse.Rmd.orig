@@ -119,21 +119,30 @@ with_probs |>
   unnest_wider(urgency_probabilities)
 ```
 
-`unnest_longer()` gives one row per option instead. From there, the
-probability of the option each row chose is a filter. That is the number
-`min_confidence` compares with the threshold:
+`unnest_longer()` gives one row per option instead, the shape grouped
+summaries and plots want:
+
+```{r}
+with_probs |>
+  select(id, department_probabilities) |>
+  unnest_longer(department_probabilities, indices_to = "option",
+                values_to = "probability")
+```
+
+## Abstaining on uncertain rows
+
+`min_confidence` compares its threshold with the confidence in each answer
+given (for a choice question, the chosen option's probability) and adds an
+`<id>_abstained` column. `answer_confidence = TRUE` adds the number it
+compared:
 
 ```{r}
 gated <- tickets |>
   laya_annotate(questions["department"], state = c("subject", "body"),
-                min_confidence = 0.99, probabilities = TRUE)
+                min_confidence = 0.99, answer_confidence = TRUE)
 
 gated |>
-  select(id, department, department_abstained, department_probabilities) |>
-  unnest_longer(department_probabilities, indices_to = "option",
-                values_to = "chosen_p") |>
-  filter(option == department) |>
-  select(id, department, chosen_p, department_abstained)
+  select(id, department, department_answer_confidence, department_abstained)
 ```
 
 The answer is kept even when the model abstains, so you choose what to do

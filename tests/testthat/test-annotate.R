@@ -56,6 +56,15 @@ test_that("laya_annotate adds typed answer columns", {
   expect_named(one$laya_churn_risk_probabilities[[1]], c("false", "true"))
   expect_type(one$laya_churn_risk_abstained, "logical")
 
+  # answer_confidence: what the gate compares, i.e. the chosen option's probability.
+  ac <- laya_annotate(tickets, qs["department"], state = "body", confidence = FALSE,
+                      answer_confidence = TRUE, probabilities = TRUE, progress = FALSE)
+  expect_identical(setdiff(names(ac), names(tickets)),
+                   c("department", "department_answer_confidence", "department_probabilities"))
+  chosen <- mapply(function(p, k) if (is.na(k)) NA_real_ else p[[k]],
+                   ac$department_probabilities, as.character(ac$department))
+  expect_equal(ac$department_answer_confidence, unname(chosen), tolerance = 1e-3)
+
   skip_if_not_installed("tibble")
   tb <- laya_annotate(tibble::as_tibble(tickets[1:2, ]), qs["department"], "body", progress = FALSE)
   expect_s3_class(tb, "tbl_df")

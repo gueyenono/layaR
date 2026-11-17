@@ -170,31 +170,55 @@ with_probs |>
 #> 6     6       0.0024 0.0607                                 0.937
 ```
 
-`unnest_longer()` gives one row per option instead. From there, the
-probability of the option each row chose is a filter. That is the number
-`min_confidence` compares with the threshold:
+`unnest_longer()` gives one row per option instead, the shape grouped
+summaries and plots want:
+
+
+``` r
+with_probs |>
+  select(id, department_probabilities) |>
+  unnest_longer(department_probabilities, indices_to = "option",
+                values_to = "probability")
+#> # A tibble: 24 × 3
+#>       id option    probability
+#>    <int> <chr>           <dbl>
+#>  1     1 billing        1     
+#>  2     1 technical      0     
+#>  3     1 sales          0     
+#>  4     1 other          0     
+#>  5     2 billing        0.0003
+#>  6     2 technical      0.998 
+#>  7     2 sales          0.0003
+#>  8     2 other          0.0017
+#>  9     3 billing        0.0005
+#> 10     3 technical      0.0001
+#> # ℹ 14 more rows
+```
+
+## Abstaining on uncertain rows
+
+`min_confidence` compares its threshold with the confidence in each answer
+given (for a choice question, the chosen option's probability) and adds an
+`<id>_abstained` column. `answer_confidence = TRUE` adds the number it
+compared:
 
 
 ``` r
 gated <- tickets |>
   laya_annotate(questions["department"], state = c("subject", "body"),
-                min_confidence = 0.99, probabilities = TRUE)
+                min_confidence = 0.99, answer_confidence = TRUE)
 
 gated |>
-  select(id, department, department_abstained, department_probabilities) |>
-  unnest_longer(department_probabilities, indices_to = "option",
-                values_to = "chosen_p") |>
-  filter(option == department) |>
-  select(id, department, chosen_p, department_abstained)
+  select(id, department, department_answer_confidence, department_abstained)
 #> # A tibble: 6 × 4
-#>      id department chosen_p department_abstained
-#>   <int> <fct>         <dbl> <lgl>               
-#> 1     1 billing       1     FALSE               
-#> 2     2 technical     0.998 FALSE               
-#> 3     3 sales         0.999 FALSE               
-#> 4     4 technical     0.939 TRUE                
-#> 5     5 technical     0.92  TRUE                
-#> 6     6 technical     0.963 TRUE
+#>      id department department_answer_confidence department_abstained
+#>   <int> <fct>                             <dbl> <lgl>               
+#> 1     1 billing                           1     FALSE               
+#> 2     2 technical                         0.998 FALSE               
+#> 3     3 sales                             0.999 FALSE               
+#> 4     4 technical                         0.939 TRUE                
+#> 5     5 technical                         0.92  TRUE                
+#> 6     6 technical                         0.963 TRUE
 ```
 
 The answer is kept even when the model abstains, so you choose what to do
