@@ -21,7 +21,8 @@ laya_annotate(
 \item{questions}{A question set (\code{\link[=laya_questions]{laya_questions()}}, a preset, or anything
 \code{\link[=as_laya_questions]{as_laya_questions()}} accepts).}
 
-\item{state}{The column or columns the model reads. With one column, its
+\item{state}{The name or names of the column(s) the model reads, as strings
+(\code{"text"}, \code{c("subject", "body")}), not bare names. With one column, its
 text is the state as is. With several, each row becomes a structured
 state such as \verb{\{"subject": ..., "body": ...\}}, which keeps the field
 names as context for the model.}

@@ -1,6 +1,6 @@
 Package: layaR
 Title: Local Laya Decision Models via Rust
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     c(person("G. Nono", "Ghislain", , "nonoghislain@gmail.com", role = c("aut", "cre")),
       person("Convai Innovations", role = "cph",

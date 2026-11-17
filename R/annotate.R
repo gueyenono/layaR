@@ -21,7 +21,8 @@
 #' @param data A data frame or tibble. A tibble stays a tibble.
 #' @param questions A question set ([laya_questions()], a preset, or anything
 #'   [as_laya_questions()] accepts).
-#' @param state The column or columns the model reads. With one column, its
+#' @param state The name or names of the column(s) the model reads, as strings
+#'   (`"text"`, `c("subject", "body")`), not bare names. With one column, its
 #'   text is the state as is. With several, each row becomes a structured
 #'   state such as `{"subject": ..., "body": ...}`, which keeps the field
 #'   names as context for the model.
@@ -55,9 +56,25 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
     laya_abort("{.arg data} must be a data frame.", kind = "invalid_argument")
   }
   questions <- as_laya_questions(questions)
-  if (missing(state) || !is.character(state) || !length(state) || anyNA(state)) {
-    laya_abort(c("{.arg state} must name the column(s) the model reads.",
-                 i = "For example {.code state = \"text\"} or {.code state = c(\"subject\", \"body\")}."),
+  state_hint <- c(i = "For example {.code state = \"text\"} or {.code state = c(\"subject\", \"body\")}.")
+  if (missing(state)) {
+    laya_abort(c("{.arg state} must name the column(s) the model reads.", state_hint),
+               kind = "invalid_argument")
+  }
+  state_expr <- substitute(state)
+  state <- tryCatch(state, error = function(e) e)
+  if (inherits(state, "error") || !is.character(state) || !length(state) || anyNA(state)) {
+    # Bare column names, as in dplyr: `state = c(subject, body)` either fails to
+    # evaluate or finds an unrelated object (`body` is a base function).
+    bare <- bare_names(state_expr)
+    if (length(bare) && (inherits(state, "error") || any(bare %in% names(data)))) {
+      suggestion <- paste(deparse(bare), collapse = "")
+      laya_abort(c("{.arg state} takes column names as strings, not bare names.",
+                   i = "Use {.code state = {suggestion}}."),
+                 kind = "invalid_argument")
+    }
+    if (inherits(state, "error")) stop(state)
+    laya_abort(c("{.arg state} must name the column(s) the model reads.", state_hint),
                kind = "invalid_argument")
   }
   unknown <- setdiff(state, names(data))
@@ -114,6 +131,18 @@ laya_annotate <- function(data, questions, state, engine = laya_default_engine()
     }
   }
   data
+}
+
+# The names in `x` or `c(x, y)`, or character(0) for any other expression.
+bare_names <- function(expr) {
+  if (is.symbol(expr)) return(as.character(expr))
+  if (is.call(expr) && identical(expr[[1]], quote(c)) && length(expr) > 1) {
+    args <- as.list(expr)[-1]
+    if (is.null(names(args)) && all(vapply(args, is.symbol, logical(1)))) {
+      return(vapply(args, as.character, character(1)))
+    }
+  }
+  character(0)
 }
 
 answer_column <- function(q, answers) {

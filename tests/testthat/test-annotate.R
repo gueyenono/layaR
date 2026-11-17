@@ -20,6 +20,17 @@ test_that("laya_annotate checks its arguments before predicting", {
   expect_error(laya_annotate(list(a = 1), qs, "a", engine = eng), class = "laya_error_invalid_argument")
   expect_error(laya_annotate(tickets, qs, engine = eng), class = "laya_error_invalid_argument")
   expect_error(laya_annotate(tickets, qs, "nope", engine = eng), "nope")
+  # Bare names, dplyr style: whether they fail to evaluate or find another object
+  # (`body` is a base function), the error says to quote them.
+  expect_error(laya_annotate(tickets, qs, c(subject, body), engine = eng),
+               'state = c\\("subject", "body"\\)', class = "laya_error_invalid_argument")
+  expect_error(laya_annotate(tickets, qs, body, engine = eng),
+               'state = "body"', class = "laya_error_invalid_argument")
+  cols <- c("subject", "body")
+  # A variable holding names is fine: the call gets past `state` to the `prefix` check.
+  expect_error(laya_annotate(tickets, qs, cols, engine = eng, prefix = NA), "prefix")
+  expect_error(laya_annotate(tickets, qs, 1, engine = eng), "must name the column")
+  expect_error(laya_annotate(tickets, qs, stop("boom"), engine = eng), "boom")
   clash <- transform(tickets, urgency = 1)
   expect_error(laya_annotate(clash, qs, "body", engine = eng), "prefix")
 })

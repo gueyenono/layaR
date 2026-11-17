@@ -1,3 +1,11 @@
+# layaR (development version)
+
+* `laya_annotate()` explains that `state` takes column names as strings when
+  given bare names (`state = c(subject, body)`), instead of failing with
+  "object not found".
+* New website article, "Using layaR with the tidyverse", showing the
+  data-frame workflows with dplyr, tidyr, purrr and ggplot2.
+
 # layaR 0.1.0
 
 First release. layaR runs Laya decision models locally from R through the
