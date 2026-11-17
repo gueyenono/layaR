@@ -44,6 +44,9 @@ tickets <- data.frame(
 )
 ```
 
+The examples here use base R. For the same workflows written with dplyr,
+tidyr and purrr, see [Using layaR with the tidyverse](https://gueyenono.github.io/layaR/articles/tidyverse.html).
+
 ## Annotating a data frame
 
 `laya_annotate()` asks the same questions about every row and adds the
