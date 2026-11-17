@@ -32,6 +32,10 @@ tickets <- data.frame(
 )
 ```
 
+The examples here use base R. For the same workflows written with dplyr,
+tidyr and purrr, see [Using layaR with the
+tidyverse](https://gueyenono.github.io/layaR/articles/tidyverse.html).
+
 ## Annotating a data frame
 
 [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
@@ -77,7 +81,7 @@ table(annotated$department)
 #> 
 #>   billing technical     sales     other 
 #>         1         4         1         0
-annotated[annotated$churn_risk > 0.5, c("id", "subject", "churn_risk")]
+annotated |> subset(churn_risk > 0.5, select = c(id, subject, churn_risk))
 #>   id              subject churn_risk
 #> 1  1     Duplicate charge     0.6003
 #> 2  2 App crashes on login     0.5041
@@ -92,9 +96,10 @@ mistakes you can live with; check it against labelled rows from your own
 data.
 
 `probabilities = TRUE` adds a list-column with each option’s
-probability, `prefix` names the new columns differently, and rows whose
-state columns are all `NA` get `NA` answers without a prediction. A
-tibble stays a tibble.
+probability, `answer_confidence = TRUE` a column with the confidence in
+each answer given (see below), `prefix` names the new columns
+differently, and rows whose state columns are all `NA` get `NA` answers
+without a prediction. A tibble stays a tibble.
 
 ### Abstaining on uncertain rows
 
@@ -104,22 +109,21 @@ answer is kept, so you choose what to do with the uncertain rows.
 The gate compares the threshold with each answer’s `answer_confidence`,
 which for a choice question is the probability of the chosen option.
 That can differ from the `_confidence` column, a calibrated measure over
-all the options. `probabilities = TRUE` shows what the gate sees:
+all the options. `answer_confidence = TRUE` shows what the gate sees:
 
 ``` r
 
 gated <- laya_annotate(tickets, questions["department"], state = c("subject", "body"),
-                       min_confidence = 0.99, probabilities = TRUE)
-gated$chosen_p <- round(mapply(function(p, k) p[[k]], gated$department_probabilities,
-                               as.character(gated$department)), 4)
-gated[, c("id", "department", "chosen_p", "department_abstained")]
-#>   id department chosen_p department_abstained
-#> 1  1    billing   1.0000                FALSE
-#> 2  2  technical   0.9976                FALSE
-#> 3  3      sales   0.9990                FALSE
-#> 4  4  technical   0.9387                 TRUE
-#> 5  5  technical   0.9200                 TRUE
-#> 6  6  technical   0.9634                 TRUE
+                       min_confidence = 0.99, answer_confidence = TRUE)
+gated |>
+  subset(select = c(id, department, department_answer_confidence, department_abstained))
+#>   id department department_answer_confidence department_abstained
+#> 1  1    billing                       1.0000                FALSE
+#> 2  2  technical                       0.9976                FALSE
+#> 3  3      sales                       0.9990                FALSE
+#> 4  4  technical                       0.9387                 TRUE
+#> 5  5  technical                       0.9200                 TRUE
+#> 6  6  technical                       0.9634                 TRUE
 ```
 
 ## Batches
@@ -254,7 +258,7 @@ texts <- c(
   "Me cobraron dos veces este mes. ¿Pueden devolverme el dinero?",
   "ฉันถูกเรียกเก็บเงินสองครั้ง"
 )
-laya_detect_language(texts)[, c("script", "language", "is_english")]
+laya_detect_language(texts) |> subset(select = c(script, language, is_english))
 #>   script language is_english
 #> 1  latin       en       TRUE
 #> 2  latin       es      FALSE
@@ -265,8 +269,9 @@ The multilingual checkpoint answers the same questions in any of them:
 
 ``` r
 
-as.data.frame(laya_predict_batch(texts, questions["department"]))[
-  , c("state_id", "answer", "confidence")]
+laya_predict_batch(texts, questions["department"]) |>
+  as.data.frame() |>
+  subset(select = c(state_id, answer, confidence))
 #>   state_id  answer confidence
 #> 1        1 billing     0.5778
 #> 2        2 billing     0.9995

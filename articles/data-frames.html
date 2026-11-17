@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
 <li><a class="dropdown-item" href="../articles/writing-questions.html">Writing questions</a></li>
     <li><a class="dropdown-item" href="../articles/data-frames.html">Data frames, batches and long documents</a></li>
     <li><a class="dropdown-item" href="../articles/models-and-performance.html">Models and performance</a></li>
+    <li><a class="dropdown-item" href="../articles/tidyverse.html">Using layaR with the tidyverse</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +62,7 @@
       <h1>Data frames, batches and long documents</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/v0.1.0/vignettes/data-frames.Rmd" class="external-link"><code>vignettes/data-frames.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/main/vignettes/data-frames.Rmd" class="external-link"><code>vignettes/data-frames.Rmd</code></a></small>
       <div class="d-none name"><code>data-frames.Rmd</code></div>
     </div>
 
@@ -96,6 +97,9 @@
 <span>    <span class="st">"Production is down and our customers can't check out. Fix this now."</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>The examples here use base R. For the same workflows written with
+dplyr, tidyr and purrr, see <a href="https://gueyenono.github.io/layaR/articles/tidyverse.html">Using
+layaR with the tidyverse</a>.</p>
 <div class="section level2">
 <h2 id="annotating-a-data-frame">Annotating a data frame<a class="anchor" aria-label="anchor" href="#annotating-a-data-frame"></a>
 </h2>
@@ -137,7 +141,7 @@ data-frame tools apply directly:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   billing technical     sales     other </span></span>
 <span><span class="co">#&gt;         1         4         1         0</span></span>
-<span><span class="va">annotated</span><span class="op">[</span><span class="va">annotated</span><span class="op">$</span><span class="va">churn_risk</span> <span class="op">&gt;</span> <span class="fl">0.5</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"subject"</span>, <span class="st">"churn_risk"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">annotated</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">churn_risk</span> <span class="op">&gt;</span> <span class="fl">0.5</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">subject</span>, <span class="va">churn_risk</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   id              subject churn_risk</span></span>
 <span><span class="co">#&gt; 1  1     Duplicate charge     0.6003</span></span>
 <span><span class="co">#&gt; 2  2 App crashes on login     0.5041</span></span>
@@ -149,10 +153,11 @@ customer is not the same as a leaving one. A threshold is a choice about
 which mistakes you can live with; check it against labelled rows from
 your own data.</p>
 <p><code>probabilities = TRUE</code> adds a list-column with each
-option’s probability, <code>prefix</code> names the new columns
-differently, and rows whose state columns are all <code>NA</code> get
-<code>NA</code> answers without a prediction. A tibble stays a
-tibble.</p>
+option’s probability, <code>answer_confidence = TRUE</code> a column
+with the confidence in each answer given (see below),
+<code>prefix</code> names the new columns differently, and rows whose
+state columns are all <code>NA</code> get <code>NA</code> answers
+without a prediction. A tibble stays a tibble.</p>
 <div class="section level3">
 <h3 id="abstaining-on-uncertain-rows">Abstaining on uncertain rows<a class="anchor" aria-label="anchor" href="#abstaining-on-uncertain-rows"></a>
 </h3>
@@ -163,20 +168,20 @@ to do with the uncertain rows.</p>
 <code>answer_confidence</code>, which for a choice question is the
 probability of the chosen option. That can differ from the
 <code>_confidence</code> column, a calibrated measure over all the
-options. <code>probabilities = TRUE</code> shows what the gate sees:</p>
+options. <code>answer_confidence = TRUE</code> shows what the gate
+sees:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/laya_annotate.html">laya_annotate</a></span><span class="op">(</span><span class="va">tickets</span>, <span class="va">questions</span><span class="op">[</span><span class="st">"department"</span><span class="op">]</span>, state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"body"</span><span class="op">)</span>,</span>
-<span>                       min_confidence <span class="op">=</span> <span class="fl">0.99</span>, probabilities <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">gated</span><span class="op">$</span><span class="va">chosen_p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">p</span>, <span class="va">k</span><span class="op">)</span> <span class="va">p</span><span class="op">[[</span><span class="va">k</span><span class="op">]</span><span class="op">]</span>, <span class="va">gated</span><span class="op">$</span><span class="va">department_probabilities</span>,</span>
-<span>                               <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">gated</span><span class="op">$</span><span class="va">department</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="va">gated</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"department"</span>, <span class="st">"chosen_p"</span>, <span class="st">"department_abstained"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   id department chosen_p department_abstained</span></span>
-<span><span class="co">#&gt; 1  1    billing   1.0000                FALSE</span></span>
-<span><span class="co">#&gt; 2  2  technical   0.9976                FALSE</span></span>
-<span><span class="co">#&gt; 3  3      sales   0.9990                FALSE</span></span>
-<span><span class="co">#&gt; 4  4  technical   0.9387                 TRUE</span></span>
-<span><span class="co">#&gt; 5  5  technical   0.9200                 TRUE</span></span>
-<span><span class="co">#&gt; 6  6  technical   0.9634                 TRUE</span></span></code></pre></div>
+<span>                       min_confidence <span class="op">=</span> <span class="fl">0.99</span>, answer_confidence <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">gated</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">department</span>, <span class="va">department_answer_confidence</span>, <span class="va">department_abstained</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   id department department_answer_confidence department_abstained</span></span>
+<span><span class="co">#&gt; 1  1    billing                       1.0000                FALSE</span></span>
+<span><span class="co">#&gt; 2  2  technical                       0.9976                FALSE</span></span>
+<span><span class="co">#&gt; 3  3      sales                       0.9990                FALSE</span></span>
+<span><span class="co">#&gt; 4  4  technical                       0.9387                 TRUE</span></span>
+<span><span class="co">#&gt; 5  5  technical                       0.9200                 TRUE</span></span>
+<span><span class="co">#&gt; 6  6  technical                       0.9634                 TRUE</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -298,7 +303,7 @@ without a model:</p>
 <span>  <span class="st">"Me cobraron dos veces este mes. ¿Pueden devolverme el dinero?"</span>,</span>
 <span>  <span class="st">"ฉันถูกเรียกเก็บเงินสองครั้ง"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/laya_detect_language.html">laya_detect_language</a></span><span class="op">(</span><span class="va">texts</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"script"</span>, <span class="st">"language"</span>, <span class="st">"is_english"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/laya_detect_language.html">laya_detect_language</a></span><span class="op">(</span><span class="va">texts</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">script</span>, <span class="va">language</span>, <span class="va">is_english</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   script language is_english</span></span>
 <span><span class="co">#&gt; 1  latin       en       TRUE</span></span>
 <span><span class="co">#&gt; 2  latin       es      FALSE</span></span>
@@ -306,8 +311,9 @@ without a model:</p>
 <p>The multilingual checkpoint answers the same questions in any of
 them:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">questions</span><span class="op">[</span><span class="st">"department"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">[</span></span>
-<span>  , <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"state_id"</span>, <span class="st">"answer"</span>, <span class="st">"confidence"</span><span class="op">)</span><span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">questions</span><span class="op">[</span><span class="st">"department"</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">state_id</span>, <span class="va">answer</span>, <span class="va">confidence</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   state_id  answer confidence</span></span>
 <span><span class="co">#&gt; 1        1 billing     0.5778</span></span>
 <span><span class="co">#&gt; 2        2 billing     0.9995</span></span>

@@ -133,7 +133,7 @@ ask <- function(text) {
     order_a = laya_choice("Which department should handle this request?", .options = options_a),
     order_b = laya_choice("Which department should handle this request?", .options = options_b)
   )
-  as.data.frame(laya_predict(text, qs))[, c("id", "answer", "value")]
+  laya_predict(text, qs) |> as.data.frame() |> subset(select = c(id, answer, value))
 }
 ask("We want to upgrade to 50 seats but the payment form keeps failing.")
 #>        id  answer  value
@@ -177,9 +177,8 @@ wordings <- laya_questions(
   say      = laya_noul("Does the customer say they will cancel or leave?"),
   mention  = laya_noul("Does the customer mention cancelling their plan, subscription or account?")
 )
-p <- sapply(laya_predict_batch(texts, wordings), function(r) {
-  vapply(r$answers, function(a) a$noul, numeric(1))
-})
+p <- laya_predict_batch(texts, wordings) |>
+  sapply(function(r) vapply(r$answers, function(a) a$noul, numeric(1)))
 data.frame(cancels = truth, round(t(p), 2))
 #>   cancels threaten  say mention
 #> 1    TRUE     0.02 0.80    0.97

@@ -1,5 +1,19 @@
 # Changelog
 
+## layaR (development version)
+
+- [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
+  gains `answer_confidence`, which adds an `<id>_answer_confidence`
+  column: the confidence in the answer given (for a choice question, the
+  chosen option’s probability), the number `min_confidence` compares
+  with its threshold.
+- [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
+  explains that `state` takes column names as strings when given bare
+  names (`state = c(subject, body)`), instead of failing with “object
+  not found”.
+- New website article, “Using layaR with the tidyverse”, showing the
+  data-frame workflows with dplyr, tidyr, purrr and ggplot2.
+
 ## layaR 0.1.0
 
 First release. layaR runs Laya decision models locally from R through

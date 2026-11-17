@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
 <li><a class="dropdown-item" href="../articles/writing-questions.html">Writing questions</a></li>
     <li><a class="dropdown-item" href="../articles/data-frames.html">Data frames, batches and long documents</a></li>
     <li><a class="dropdown-item" href="../articles/models-and-performance.html">Models and performance</a></li>
+    <li><a class="dropdown-item" href="../articles/tidyverse.html">Using layaR with the tidyverse</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +62,7 @@
       <h1>Getting started with layaR</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/v0.1.0/vignettes/layaR.Rmd" class="external-link"><code>vignettes/layaR.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/main/vignettes/layaR.Rmd" class="external-link"><code>vignettes/layaR.Rmd</code></a></small>
       <div class="d-none name"><code>layaR.Rmd</code></div>
     </div>
 
@@ -258,8 +259,9 @@ passed the threshold. An abstained answer is still there; it is flagged
 so you can send it to a person instead:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vague</span> <span class="op">&lt;-</span> <span class="st">"Hi, quick question about my account."</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">vague</span>, <span class="va">questions</span>, min_confidence <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span><span class="op">)</span><span class="op">[</span></span>
-<span>  , <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"answer"</span>, <span class="st">"confidence"</span>, <span class="st">"abstention"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">vague</span>, <span class="va">questions</span>, min_confidence <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">answer</span>, <span class="va">confidence</span>, <span class="va">abstention</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           id  answer confidence abstention</span></span>
 <span><span class="co">#&gt; 1 department billing     0.1485  abstained</span></span>
 <span><span class="co">#&gt; 2    urgency    1.78     0.4988  abstained</span></span>

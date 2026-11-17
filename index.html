@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,7 @@
 <li><a class="dropdown-item" href="articles/writing-questions.html">Writing questions</a></li>
     <li><a class="dropdown-item" href="articles/data-frames.html">Data frames, batches and long documents</a></li>
     <li><a class="dropdown-item" href="articles/models-and-performance.html">Models and performance</a></li>
+    <li><a class="dropdown-item" href="articles/tidyverse.html">Using layaR with the tidyverse</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -127,7 +128,7 @@
 <span><span class="co">#&gt; 2    urgency  score    1.87 1.8685     0.6371            0.8721               1       &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 3 churn_risk   noul    TRUE 0.8782     0.8782            0.8782               1       &lt;NA&gt;</span></span></code></pre></div>
 <p>The first call loads the model (a few seconds); later calls take a few hundred milliseconds on a CPU. Wording matters: asking whether the user “threatens” to cancel misses this ticket, while “says they will cancel” gets it (see <code><a href="articles/writing-questions.html">vignette("writing-questions")</a></code>).</p>
-<p>The guides cover the rest: <code><a href="articles/layaR.html">vignette("layaR")</a></code> to get started, then writing questions, data frames and long documents, and models and performance.</p>
+<p>The guides cover the rest: <code><a href="articles/layaR.html">vignette("layaR")</a></code> to get started, then writing questions, data frames and long documents, and models and performance. If you work with dplyr and tidyr, see <a href="https://gueyenono.github.io/layaR/articles/tidyverse.html">Using layaR with the tidyverse</a>.</p>
 <div class="section level3">
 <h3 id="many-states">Many states<a class="anchor" aria-label="anchor" href="#many-states"></a>
 </h3>
@@ -157,7 +158,8 @@
 <span>  body <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"We were billed twice. Refund it or we cancel."</span>, <span class="st">"Since the update I can't log in."</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/laya_annotate.html">laya_annotate</a></span><span class="op">(</span><span class="va">tickets</span>, <span class="va">questions</span>, state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"body"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># adds department (a factor), urgency, churn_risk and a _confidence column for each</span></span></code></pre></div>
+<span><span class="co"># adds department (a factor), urgency, churn_risk and a _confidence column for each</span></span>
+<span><span class="co"># a tibble in gives a tibble out, so it works inside a dplyr pipeline too</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="emails-and-languages">Emails and languages<a class="anchor" aria-label="anchor" href="#emails-and-languages"></a>

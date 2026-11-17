@@ -14,6 +14,7 @@ laya_annotate(
   ...,
   prefix = "",
   confidence = TRUE,
+  answer_confidence = FALSE,
   probabilities = FALSE
 )
 ```
@@ -34,10 +35,11 @@ laya_annotate(
 
 - state:
 
-  The column or columns the model reads. With one column, its text is
-  the state as is. With several, each row becomes a structured state
-  such as `{"subject": ..., "body": ...}`, which keeps the field names
-  as context for the model.
+  The name or names of the column(s) the model reads, as strings
+  (`"text"`, `c("subject", "body")`), not bare names. With one column,
+  its text is the state as is. With several, each row becomes a
+  structured state such as `{"subject": ..., "body": ...}`, which keeps
+  the field names as context for the model.
 
 - engine:
 
@@ -60,6 +62,12 @@ laya_annotate(
 - confidence:
 
   Add a `<id>_confidence` column per question?
+
+- answer_confidence:
+
+  Add a `<id>_answer_confidence` column per question: the confidence in
+  the answer given, which `min_confidence` compares with its threshold.
+  For a choice question it is the chosen option's probability.
 
 - probabilities:
 
@@ -87,7 +95,8 @@ gets a logical `<id>_abstained` column. The answer is kept either way;
 filter on the column to drop low-confidence answers. The gate compares
 the threshold with each answer's `answer_confidence` (for a choice
 question, the chosen option's probability), which can differ from the
-`<id>_confidence` column.
+`<id>_confidence` column; `answer_confidence = TRUE` adds it as a
+`<id>_answer_confidence` column.
 
 ## See also
 

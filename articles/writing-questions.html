@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
 <li><a class="dropdown-item" href="../articles/writing-questions.html">Writing questions</a></li>
     <li><a class="dropdown-item" href="../articles/data-frames.html">Data frames, batches and long documents</a></li>
     <li><a class="dropdown-item" href="../articles/models-and-performance.html">Models and performance</a></li>
+    <li><a class="dropdown-item" href="../articles/tidyverse.html">Using layaR with the tidyverse</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -61,7 +62,7 @@
       <h1>Writing questions</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/v0.1.0/vignettes/writing-questions.Rmd" class="external-link"><code>vignettes/writing-questions.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/gueyenono/layaR/blob/main/vignettes/writing-questions.Rmd" class="external-link"><code>vignettes/writing-questions.Rmd</code></a></small>
       <div class="d-none name"><code>writing-questions.Rmd</code></div>
     </div>
 
@@ -176,7 +177,7 @@ orders:</p>
 <span>    order_a <span class="op">=</span> <span class="fu"><a href="../reference/laya_question.html">laya_choice</a></span><span class="op">(</span><span class="st">"Which department should handle this request?"</span>, .options <span class="op">=</span> <span class="va">options_a</span><span class="op">)</span>,</span>
 <span>    order_b <span class="op">=</span> <span class="fu"><a href="../reference/laya_question.html">laya_choice</a></span><span class="op">(</span><span class="st">"Which department should handle this request?"</span>, .options <span class="op">=</span> <span class="va">options_b</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">qs</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"id"</span>, <span class="st">"answer"</span>, <span class="st">"value"</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">qs</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span>select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">id</span>, <span class="va">answer</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">ask</span><span class="op">(</span><span class="st">"We want to upgrade to 50 seats but the payment form keeps failing."</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        id  answer  value</span></span>
@@ -214,9 +215,8 @@ question are asked about texts where the answer is known:</p>
 <span>  say      <span class="op">=</span> <span class="fu"><a href="../reference/laya_question.html">laya_noul</a></span><span class="op">(</span><span class="st">"Does the customer say they will cancel or leave?"</span><span class="op">)</span>,</span>
 <span>  mention  <span class="op">=</span> <span class="fu"><a href="../reference/laya_question.html">laya_noul</a></span><span class="op">(</span><span class="st">"Does the customer mention cancelling their plan, subscription or account?"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">wordings</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">answers</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="va">a</span><span class="op">$</span><span class="va">noul</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">wordings</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">answers</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span><span class="op">)</span> <span class="va">a</span><span class="op">$</span><span class="va">noul</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>cancels <span class="op">=</span> <span class="va">truth</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   cancels threaten  say mention</span></span>
 <span><span class="co">#&gt; 1    TRUE     0.02 0.80    0.97</span></span>

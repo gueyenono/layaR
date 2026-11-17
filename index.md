@@ -108,7 +108,9 @@ gets it (see
 The guides cover the rest:
 [`vignette("layaR")`](https://gueyenono.github.io/layaR/articles/layaR.md)
 to get started, then writing questions, data frames and long documents,
-and models and performance.
+and models and performance. If you work with dplyr and tidyr, see [Using
+layaR with the
+tidyverse](https://gueyenono.github.io/layaR/articles/tidyverse.html).
 
 ### Many states
 
@@ -142,6 +144,7 @@ tickets <- data.frame(
 )
 laya_annotate(tickets, questions, state = c("subject", "body"))
 # adds department (a factor), urgency, churn_risk and a _confidence column for each
+# a tibble in gives a tibble out, so it works inside a dplyr pipeline too
 ```
 
 ### Emails and languages
