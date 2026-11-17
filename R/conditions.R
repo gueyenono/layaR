@@ -31,7 +31,7 @@ rs_unwrap <- function(res, call = parent.frame()) {
 #' `invalid_question`, `invalid_config`, `checkpoint_mismatch`, `no_markers`,
 #' `invalid_state`, `unsupported_aggregate`, `invalid_window`,
 #' `not_supported`, `invalid_min_confidence`. Kinds from layaR itself:
-#' `model_not_found`, `invalid_argument`, `bridge_json`,
+#' `model_not_found`, `invalid_argument`, `forked`, `bridge_json`,
 #' `bridge_invalid_option`, `bridge_engine_closed`, `bridge_panic`.
 #'
 #' @name laya_conditions

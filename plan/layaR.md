@@ -534,8 +534,13 @@ It's mapped to `LangTemperatureTable` in `options.rs`.
 
 ## 8. R ↔ JSON mapping rules (`R/json.R`)
 
-One helper, `to_json()`, wraps `jsonlite::toJSON(x, auto_unbox = TRUE, digits = NA, null = "null",
-na = "null", POSIXt = "ISO8601", Date = "ISO8601", factor = "string")`. Every input goes through it.
+One helper, `to_json()`, wraps `jsonlite::toJSON(x, auto_unbox = TRUE, digits = I(17),
+always_decimal = TRUE, null = "null", na = "null", POSIXt = "ISO8601", Date = "ISO8601",
+factor = "string")`. Every input goes through it.
+
+The engine re-serializes a structured state the way Python's `json.dumps` does, and the model reads
+that text, so R numbers follow Python's int/float split (changed in Phase 3 after the golden sweep
+showed 1–3 token differences on numeric states).
 
 | R value | JSON | Note |
 |---|---|---|
@@ -543,8 +548,8 @@ na = "null", POSIXt = "ISO8601", Date = "ISO8601", factor = "string")`. Every in
 | named list | object, order kept | The common structured state. |
 | unnamed list or vector of length > 1 | array | |
 | length-1 vector inside a list | scalar | `auto_unbox`. **Gotcha:** a one-level `laya_score()` would collapse to a scalar, so constructors store criteria as lists, and `I()` is honored. |
-| numeric | number, full precision | **`digits = NA` is mandatory.** jsonlite's default of 4 digits would silently change states. |
-| whole-number double `1` | `1` | Python would print `1.0` for a float. That can shift tokenization slightly for numeric states. Documented, and a test pins the behavior. |
+| double | number, always with a decimal point, 17 significant digits | `149` → `149.0`, like a Python float. 17 digits reach Rust bit-for-bit, and Rust prints Python's shortest repr (`1/3` → `0.3333333333333333`). jsonlite's defaults (4 or 15 digits, `2` for `2.0`) changed the tokens. |
+| integer `3L` | `3` | Like a Python int. Data read from CSV is usually integer already, as in pandas. A test pins both rules. |
 | `NA` | `null` | Inside a state. In questions it's an error, raised in R. |
 | `NULL` state | — | Error raised in R before the call. Upstream refuses null states too. |
 | factor | string | |
@@ -747,6 +752,20 @@ operating systems in CI.
 5. Fork-safety documentation and test: a deliberately skipped test, plus a clear message.
 
 **Done when** parity is green for the multilingual and english fixtures.
+
+**Status (2026-11-16).**
+- `data-raw/make_fixtures.R` keeps all 117 non-shortlist cases per checkpoint: about 1 MB of JSON
+  each, 57 KB gzipped. That is more than the planned 30, but compressed it is small, and the full
+  set is the real parity check.
+- 50 cases per checkpoint are marked `core` (30 chosen, plus every error case) and run by default
+  (about 3 minutes per checkpoint). `LAYAR_PARITY=all` runs everything. The tests skip on CRAN and
+  without a model.
+- Python's `ValueError`/`TypeError` are mapped to layaR kinds from the message, and the test
+  checks the class. All 20 error cases match. `long_no_state_room` is `invalid_window`.
+- Fork safety is enforced, not only documented: engines record the PID that loaded them, and
+  using one in a forked child raises `laya_error_forked` before any Rust code runs. A real
+  `mcparallel()` test covers this.
+- The english model was exported for this phase.
 
 ### Phase 5 — Models, data frames and text utilities (2–3 days)
 

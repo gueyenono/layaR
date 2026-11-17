@@ -17,10 +17,16 @@ checkpoints <- c("multilingual", "english", "typed-decisions")
 #' keeps it for the session.
 #'
 #' Engines can't be sent to other processes. An engine restored with
-#' `readRDS()`, or used in a PSOCK worker, reconnects to its model directory
-#' on first use, which loads the model again in that process. Don't use
-#' engines across `fork()` (e.g. `parallel::mclapply()`): ONNX Runtime's
-#' thread pools don't survive it.
+#' `readRDS()`, or used in a PSOCK worker (`parallel::makePSOCKcluster()`,
+#' `future::multisession`), reconnects to its model directory on first use,
+#' which loads the model again in that process (another 1 to 1.5 GB each).
+#'
+#' Engines don't work across `fork()` (`parallel::mclapply()`,
+#' `future::multicore`): ONNX Runtime's thread pools don't survive it, so a
+#' forked child could hang. Using an engine in a forked child raises a
+#' `laya_error_forked` error instead. A single engine already runs one forward
+#' pass on several cores; for more throughput use [laya_predict_batch()], or
+#' PSOCK workers that each load their own engine.
 #'
 #' @param checkpoint Which checkpoint to load: `"multilingual"` (100+
 #'   languages, the default), `"english"` (English-optimized) or
@@ -76,6 +82,7 @@ laya_engine <- function(checkpoint = c("multilingual", "english", "typed-decisio
   engine$options_json <- as.character(to_json(options, empty_object = TRUE))
   engine$closed <- FALSE
   engine$ptr <- NULL
+  engine$pid <- NA_integer_
   class(engine) <- "laya_engine"
   connect(engine)
   engine
@@ -83,6 +90,7 @@ laya_engine <- function(checkpoint = c("multilingual", "english", "typed-decisio
 
 connect <- function(engine, call = parent.frame()) {
   engine$ptr <- rs_unwrap(rs_engine_new(engine$model_dir, engine$options_json), call = call)
+  engine$pid <- Sys.getpid()
   engine$info <- from_json(rs_unwrap(rs_engine_info(engine$ptr), call = call))
   invisible(engine)
 }
@@ -97,12 +105,26 @@ engine_ptr <- function(engine, call = parent.frame()) {
     laya_abort("This engine was closed with {.fn laya_engine_close}; create a new one.",
                kind = "bridge_engine_closed", call = call)
   }
+  check_not_forked(engine, call = call)
   if (!rs_engine_is_live(engine$ptr)) {
     cli::cli_inform(c(i = "Reconnecting a restored engine to {.path {engine$model_dir}}."),
                     class = "laya_reconnect")
     connect(engine, call = call)
   }
   engine$ptr
+}
+
+# A live pointer copied into a forked child points at ONNX Runtime state whose
+# thread pools stayed in the parent: refuse before any Rust code runs.
+check_not_forked <- function(engine, call = parent.frame()) {
+  pid <- engine$pid
+  if (!is.null(pid) && !is.na(pid) && pid != Sys.getpid() && rs_engine_is_live(engine$ptr)) {
+    laya_abort(c(
+      "This engine was loaded in another process and can't be used after {.code fork()}.",
+      i = "{.fn parallel::mclapply} and {.code future::multicore} fork the R session.",
+      i = "Use {.fn laya_predict_batch} in one process, or PSOCK workers ({.fn parallel::makePSOCKcluster}, {.code future::multisession}) that each load their own engine."
+    ), kind = "forked", call = call)
+  }
 }
 
 #' Use the default engine
@@ -156,6 +178,7 @@ laya_engine_close <- function(engine) {
   if (!inherits(engine, "laya_engine")) {
     laya_abort("{.arg engine} must be a {.cls laya_engine}.", kind = "invalid_argument")
   }
+  check_not_forked(engine)
   if (!is.null(engine$ptr)) rs_unwrap(rs_engine_close(engine$ptr))
   engine$closed <- TRUE
   for (k in names(the$engines)) {
