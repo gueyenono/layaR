@@ -1,0 +1,290 @@
+# layaR
+
+layaR runs [Laya](https://github.com/NandhaKishorM/laya) decision models
+locally from R. You ask typed questions about a piece of text or a
+record (pick one label, place it on a scale, or say yes/no) and get
+calibrated probabilities from a single forward pass. Nothing is
+generated, so there is nothing to parse and nothing to hallucinate.
+
+It wraps Laya’s Rust port (`laya-onnx`) through
+[extendr](https://extendr.github.io/) and runs on ONNX Runtime. No
+Python and no server are needed at prediction time.
+
+> **Status:** early development. Linux and macOS only for now; Windows
+> is waiting on an upstream change
+> ([NandhaKishorM/laya#1505](https://github.com/NandhaKishorM/laya/issues/1505)).
+
+## Installation
+
+layaR builds from source and needs a Rust toolchain (rustc 1.85 or
+newer) and, on Linux, OpenSSL headers (`libssl-dev` / `openssl-devel`).
+
+``` r
+
+# install.packages("remotes")
+remotes::install_github("gueyenono/layaR")
+```
+
+### Getting a model
+
+layaR needs an ONNX export of a Laya checkpoint (1.3 to 1.6 GB each).
+[`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
+fetches one from
+[`gueyenono/laya-onnx`](https://huggingface.co/gueyenono/laya-onnx),
+which holds ONNX exports of the three upstream checkpoints (unchanged
+weights, Apache-2.0):
+
+``` r
+
+laya_download_model("multilingual")   # also "english" and "typed-decisions"
+laya_models()   # (paths shortened)
+#>        checkpoint installed                                  path source layout size_gb
+#> 1    multilingual      TRUE    ~/.cache/R/layaR/onnx/multilingual  layaR  fused    1.32
+#> 2         english     FALSE         ~/.cache/R/layaR/onnx/english   <NA>   <NA>      NA
+#> 3 typed-decisions     FALSE ~/.cache/R/layaR/onnx/typed-decisions   <NA>   <NA>      NA
+```
+
+To use an export you made yourself with the script from the Laya
+repository, import it instead:
+
+``` sh
+pip install laya "torch>=2.9" onnx onnxscript onnxruntime transformers safetensors huggingface_hub
+python laya-rust/tools/export_onnx.py --model multilingual --out ~/laya-exports
+```
+
+``` r
+
+laya_import_model("~/laya-exports/multilingual", "multilingual")
+```
+
+[`laya_model_root()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
+explains where models live. A model exported for Laya’s Rust or
+TypeScript SDK (in `~/.cache/laya/onnx`) is found too.
+
+## Quickstart
+
+``` r
+
+library(layaR)
+
+questions <- laya_questions(
+  department = laya_choice(
+    "Which department should handle this request?",
+    billing   = "invoices, payments, refunds",
+    technical = "bugs, outages, system errors",
+    sales     = "pricing, new contracts",
+    other     = "everything else"
+  ),
+  urgency    = laya_score("How urgent is this request?",
+                          c("not urgent", "soon", "critical deadline or blocking issue")),
+  churn_risk = laya_noul("Does the customer say they will cancel or leave?")
+)
+
+state <- list(
+  subject = "Duplicate charge on invoice #4411",
+  body = "Hi, we were billed twice for March. Please refund the duplicate today or we will cancel our plan."
+)
+
+res <- laya_predict(state, questions)
+res
+#> <laya_result> laya-rl-agent · 3 answers · 235 input tokens
+#>   department  choice  billing        p 1.00  confidence 1.00
+#>   urgency     score   1.87 (0–2)    confidence 0.64
+#>   churn_risk  noul    0.88 → TRUE   confidence 0.88
+
+as.data.frame(res)
+#>           id   type  answer  value confidence answer_confidence act_probability abstention
+#> 1 department choice billing 1.0000     1.0000            1.0000               1       <NA>
+#> 2    urgency  score    1.87 1.8685     0.6371            0.8721               1       <NA>
+#> 3 churn_risk   noul    TRUE 0.8782     0.8782            0.8782               1       <NA>
+```
+
+The first call loads the model (a few seconds); later calls take a few
+hundred milliseconds on a CPU. Wording matters: asking whether the user
+“threatens” to cancel misses this ticket, while “says they will cancel”
+gets it (see
+[`vignette("writing-questions")`](https://gueyenono.github.io/layaR/articles/writing-questions.md)).
+
+The guides cover the rest:
+[`vignette("layaR")`](https://gueyenono.github.io/layaR/articles/layaR.md)
+to get started, then writing questions, data frames and long documents,
+and models and performance.
+
+### Many states
+
+``` r
+
+tickets <- c("Refund my duplicate charge", "The login page crashes", "What does Pro cost?")
+batch <- laya_predict_batch(tickets, questions)
+as.data.frame(batch)
+```
+
+### Presets, abstention, long documents
+
+``` r
+
+laya_predict(list(message = "My payment failed twice"), laya_preset("triage"))
+
+# Report "abstained" instead of trusting a low-confidence answer
+laya_predict(state, questions, min_confidence = 0.8)
+
+# Scan a document longer than the model's context window
+laya_predict_long(contract_text, questions)
+```
+
+### A data frame in, answers out
+
+``` r
+
+tickets <- data.frame(
+  subject = c("Duplicate charge", "App crashes on login"),
+  body = c("We were billed twice. Refund it or we cancel.", "Since the update I can't log in.")
+)
+laya_annotate(tickets, questions, state = c("subject", "body"))
+# adds department (a factor), urgency, churn_risk and a _confidence column for each
+```
+
+### Emails and languages
+
+``` r
+
+state <- laya_email_state(subject = "Refund", body = raw_body, sender = "ana@example.com")
+laya_predict(state, laya_preset("email"))
+
+# Pick a checkpoint: the English one only reads English
+laya_detect_language(c("Please refund me", "Me cobraron dos veces. \u00bfPueden devolverme el dinero?"))
+```
+
+### Sharing questions with Python
+
+Question sets use the Python SDK’s format, so they move between
+languages:
+
+``` r
+
+laya_questions_to_json(questions, "questions.json")
+questions <- as_laya_questions("questions.json")
+```
+
+## Errors
+
+Every error has class `laya_error` and a specific `laya_error_<kind>`,
+so you can handle one kind on its own:
+
+``` r
+
+tryCatch(
+  laya_predict(state, questions, max_len = 32),
+  laya_error_no_markers = function(e) message("Options don't fit: ", conditionMessage(e))
+)
+```
+
+## License
+
+Apache License 2.0. Laya and its models are Apache-2.0 (mmBERT-base, the
+multilingual backbone, is MIT).
+
+# Package index
+
+## Questions
+
+Build typed questions, or use a ready-made set.
+
+- [`laya_choice()`](https://gueyenono.github.io/layaR/reference/laya_question.md)
+  [`laya_score()`](https://gueyenono.github.io/layaR/reference/laya_question.md)
+  [`laya_noul()`](https://gueyenono.github.io/layaR/reference/laya_question.md)
+  : Build Laya questions
+- [`laya_questions()`](https://gueyenono.github.io/layaR/reference/laya_questions.md)
+  : Combine questions into a question set
+- [`laya_preset()`](https://gueyenono.github.io/layaR/reference/laya_preset.md)
+  [`laya_preset_fields()`](https://gueyenono.github.io/layaR/reference/laya_preset.md)
+  : Built-in question presets
+- [`as_laya_questions()`](https://gueyenono.github.io/layaR/reference/as_laya_questions.md)
+  : Convert to a question set
+- [`laya_validate_questions()`](https://gueyenono.github.io/layaR/reference/laya_validate_questions.md)
+  : Validate a question set without a model
+- [`laya_questions_to_json()`](https://gueyenono.github.io/layaR/reference/laya_questions_to_json.md)
+  : Write a question set as JSON
+
+## Predicting
+
+- [`laya_predict()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  [`laya_predict_batch()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  [`laya_predict_long()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  [`predict(`*`<laya_engine>`*`)`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  : Answer typed questions about a state
+
+- [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
+  : Annotate a data frame
+
+- [`laya_bucket_keys()`](https://gueyenono.github.io/layaR/reference/laya_bucket_keys.md)
+  :
+
+  Bucket names for `min_confidence`
+
+## Results
+
+- [`as.data.frame(`*`<laya_result>`*`)`](https://gueyenono.github.io/layaR/reference/laya_result.md)
+  [`laya_probabilities()`](https://gueyenono.github.io/layaR/reference/laya_result.md)
+  [`laya_answer()`](https://gueyenono.github.io/layaR/reference/laya_result.md)
+  [`as.data.frame(`*`<laya_batch_result>`*`)`](https://gueyenono.github.io/layaR/reference/laya_result.md)
+  : Laya results
+
+## Engines
+
+A loaded checkpoint. The prediction functions use a default engine.
+
+- [`laya_engine()`](https://gueyenono.github.io/layaR/reference/laya_engine.md)
+  : Load a Laya engine
+- [`laya_default_engine()`](https://gueyenono.github.io/layaR/reference/laya_default_engine.md)
+  : Use the default engine
+- [`laya_engine_info()`](https://gueyenono.github.io/layaR/reference/laya_engine_info.md)
+  [`laya_engine_close()`](https://gueyenono.github.io/layaR/reference/laya_engine_info.md)
+  : Inspect or close an engine
+
+## Models
+
+Download, import and list exported checkpoints.
+
+- [`laya_models()`](https://gueyenono.github.io/layaR/reference/laya_models.md)
+  : List checkpoints and whether they are installed
+- [`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
+  : Download a model
+- [`laya_import_model()`](https://gueyenono.github.io/layaR/reference/laya_import_model.md)
+  : Import an exported model
+- [`laya_remove_model()`](https://gueyenono.github.io/layaR/reference/laya_remove_model.md)
+  : Remove an installed model
+- [`laya_model_root()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
+  [`laya_model_path()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
+  [`laya_model_available()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
+  : Where models live
+
+## Text utilities
+
+Language detection and email cleaning; no model needed.
+
+- [`laya_detect_language()`](https://gueyenono.github.io/layaR/reference/laya_detect_language.md)
+  : Detect the language of states
+- [`laya_clean_email()`](https://gueyenono.github.io/layaR/reference/laya_clean_email.md)
+  : Clean email bodies
+- [`laya_email_state()`](https://gueyenono.github.io/layaR/reference/laya_email_state.md)
+  : Build an email state
+
+## Errors and options
+
+- [`laya_conditions`](https://gueyenono.github.io/layaR/reference/laya_conditions.md)
+  : Laya conditions
+- [`layaR`](https://gueyenono.github.io/layaR/reference/layaR-package.md)
+  [`layaR-package`](https://gueyenono.github.io/layaR/reference/layaR-package.md)
+  : layaR: Local Laya Decision Models via Rust
+
+# Articles
+
+### Guides
+
+- [Writing
+  questions](https://gueyenono.github.io/layaR/articles/writing-questions.md):
+- [Data frames, batches and long
+  documents](https://gueyenono.github.io/layaR/articles/data-frames.md):
+- [Models and
+  performance](https://gueyenono.github.io/layaR/articles/models-and-performance.md):

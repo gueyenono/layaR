@@ -1,0 +1,81 @@
+# Changelog
+
+## layaR (development version)
+
+First release, in preparation as 0.1.0. layaR runs Laya decision models
+locally from R through the `laya-onnx` Rust crate and ONNX Runtime.
+
+### Questions and predictions
+
+- [`laya_choice()`](https://gueyenono.github.io/layaR/reference/laya_question.md),
+  [`laya_score()`](https://gueyenono.github.io/layaR/reference/laya_question.md)
+  and
+  [`laya_noul()`](https://gueyenono.github.io/layaR/reference/laya_question.md)
+  build typed questions;
+  [`laya_questions()`](https://gueyenono.github.io/layaR/reference/laya_questions.md)
+  combines them.
+  [`laya_preset()`](https://gueyenono.github.io/layaR/reference/laya_preset.md)
+  gives the Python SDK’s five presets (triage, email, guard, moderation,
+  router).
+- [`laya_predict()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  answers every question about a state in one forward pass;
+  [`laya_predict_batch()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  does it for many states, in interruptible chunks with a progress bar;
+  [`laya_predict_long()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  scans documents longer than the model’s context.
+- [`laya_predict_batch()`](https://gueyenono.github.io/layaR/reference/laya_predict.md)
+  sends one state per forward pass by default, which is fastest on a CPU
+  (unlike the Python SDK, which batches a whole chunk). The
+  `layaR.batch_size` option changes the default;
+  [`?layaR`](https://gueyenono.github.io/layaR/reference/layaR-package.md)
+  lists all options.
+- `min_confidence` reports, per answer, whether it passed an abstention
+  threshold.
+- Results print compactly and convert with
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) and
+  [`laya_probabilities()`](https://gueyenono.github.io/layaR/reference/laya_result.md);
+  they keep the Python SDK’s shape.
+- [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
+  adds the answers to a data frame as columns: a factor for choice
+  questions, the expected level for scores, P(true) for yes/no
+  questions.
+- Question sets read and write the Python SDK’s JSON format
+  ([`as_laya_questions()`](https://gueyenono.github.io/layaR/reference/as_laya_questions.md),
+  [`laya_questions_to_json()`](https://gueyenono.github.io/layaR/reference/laya_questions_to_json.md)).
+
+### Models
+
+- [`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
+  downloads ONNX exports from Hugging Face (`gueyenono/laya-onnx` by
+  default), resumably.
+- [`laya_import_model()`](https://gueyenono.github.io/layaR/reference/laya_import_model.md)
+  adds an export you made yourself;
+  [`laya_models()`](https://gueyenono.github.io/layaR/reference/laya_models.md),
+  [`laya_remove_model()`](https://gueyenono.github.io/layaR/reference/laya_remove_model.md)
+  and
+  [`laya_model_root()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
+  manage them. Exports in the cache shared with Laya’s Rust and
+  TypeScript SDKs are found too.
+- [`laya_engine()`](https://gueyenono.github.io/layaR/reference/laya_engine.md)
+  loads a checkpoint (multilingual, English or typed-decisions); the
+  prediction functions use
+  [`laya_default_engine()`](https://gueyenono.github.io/layaR/reference/laya_default_engine.md).
+  Engines refuse to run after `fork()` instead of hanging, and reconnect
+  after [`saveRDS()`](https://rdrr.io/r/base/readRDS.html) or in PSOCK
+  workers.
+
+### Text utilities
+
+- [`laya_detect_language()`](https://gueyenono.github.io/layaR/reference/laya_detect_language.md),
+  [`laya_clean_email()`](https://gueyenono.github.io/layaR/reference/laya_clean_email.md)
+  and
+  [`laya_email_state()`](https://gueyenono.github.io/layaR/reference/laya_email_state.md),
+  ported from the Python SDK. They need no model.
+
+### Compatibility
+
+- Results match the Python SDK on all 117 recorded cases for each of the
+  English and multilingual checkpoints, and on all language and email
+  probes.
+- Errors have class `laya_error` and `laya_error_<kind>`.
+- Linux and macOS. Windows is not supported yet.

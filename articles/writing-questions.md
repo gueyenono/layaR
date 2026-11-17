@@ -1,0 +1,289 @@
+# Writing questions
+
+``` r
+
+library(layaR)
+```
+
+Laya answers questions it has never seen before: you describe the
+decision in plain language and the model reads your wording. How you
+word a question therefore matters. This vignette covers the three
+question types, what makes a question work well, and the token budget a
+question’s options share.
+
+## The three question types
+
+### Choice: one label from a set
+
+Each option is a label, optionally with a description after `=`. The
+label comes back as the answer, so make it meaningful; the description
+tells the model what the label covers.
+
+``` r
+
+dept <- laya_choice(
+  "Which department should handle this request?",
+  billing   = "invoices, payments, refunds",
+  technical = "bugs, outages, system errors",
+  sales     = "pricing, new contracts",
+  other     = "everything else"
+)
+dept
+#> <laya_question> choice Which department should handle this request?  [4 options: billing, technical, sales, other]
+```
+
+Labels alone work too, when they are self-explanatory:
+
+``` r
+
+laya_choice("What is the message about?", "shipping", "returns", "product question")
+#> <laya_question> choice What is the message about?  [3 options: shipping, returns, product question]
+```
+
+If the options live in a vector already, pass them with `.options`:
+
+``` r
+
+teams <- c(billing = "invoices, refunds", technical = "bugs, outages")
+laya_choice("Which team?", .options = teams)
+#> <laya_question> choice Which team?  [2 options: billing, technical]
+```
+
+### Score: a position on an ordinal scale
+
+Give the levels from lowest to highest. The answer is the **expected
+level**: a number between 0 and the number of levels minus one, so 1.6
+on a three-level scale sits between the middle and the top level.
+
+``` r
+
+urgency <- laya_score("How urgent is this request?",
+                      c("not urgent", "soon", "critical deadline or blocking issue"))
+```
+
+### Noul: yes or no
+
+A statement that is either true or false about the state. The answer is
+the calibrated probability that it holds. `if_false` and `if_true` can
+say what each side means when that isn’t obvious:
+
+``` r
+
+phishing <- laya_noul("Is this email a phishing attempt?",
+                      if_false = "a legitimate email",
+                      if_true = "phishing or fraud")
+```
+
+## Question sets
+
+[`laya_questions()`](https://gueyenono.github.io/layaR/reference/laya_questions.md)
+combines questions; the argument names become the answer ids. All the
+questions in a set are answered in one forward pass.
+
+``` r
+
+qs <- laya_questions(department = dept, urgency = urgency,
+                     churn_risk = laya_noul("Does the customer say they will cancel or leave?"))
+```
+
+Sets combine with [`c()`](https://rdrr.io/r/base/c.html), and `[`
+selects questions by id:
+
+``` r
+
+more <- c(qs, laya_questions(phishing = phishing))
+names(more)
+#> [1] "department" "urgency"    "churn_risk" "phishing"
+names(more[c("urgency", "phishing")])
+#> [1] "urgency"  "phishing"
+```
+
+[`laya_validate_questions()`](https://gueyenono.github.io/layaR/reference/laya_validate_questions.md)
+checks a set with the engine’s own rules, without loading a model:
+
+``` r
+
+shared <- '{"team": {"type": "choice", "instructions": "Which team?",
+                     "criteria": ["billing", "support", "billing"]}}'
+try(laya_validate_questions(shared))
+#> Error in laya_validate_questions(shared) : 
+#>   question 'team': choice label 2 ('billing') repeats an earlier label
+```
+
+## Writing questions that work
+
+**Make each option self-contained.** The model sees the options, not
+your database. “billing: invoices, payments, refunds” works; “team_7”
+does not. Put the fact that distinguishes an option near the start of
+its label or description.
+
+**Option order matters.** The model scores one marker per option, in
+order, and position alone shifts the scores: upstream measured a clear
+lean toward the first options when every option reads the same. A
+clear-cut text gets the same answer in any order, but an ambiguous one
+may not. Here the same three options are asked in two orders:
+
+``` r
+
+options_a <- c(billing = "invoices, payments, refunds", technical = "bugs, outages, login",
+               sales = "pricing, new contracts")
+options_b <- options_a[c("sales", "technical", "billing")]
+ask <- function(text) {
+  qs <- laya_questions(
+    order_a = laya_choice("Which department should handle this request?", .options = options_a),
+    order_b = laya_choice("Which department should handle this request?", .options = options_b)
+  )
+  as.data.frame(laya_predict(text, qs))[, c("id", "answer", "value")]
+}
+ask("We want to upgrade to 50 seats but the payment form keeps failing.")
+#>        id  answer  value
+#> 1 order_a billing 0.9994
+#> 2 order_b billing 0.9998
+ask("The app shows the wrong price at checkout.")
+#>        id  answer  value
+#> 1 order_a billing 0.9999
+#> 2 order_b   sales 0.9998
+```
+
+The second message could reasonably go to billing or to sales, and the
+answer follows whichever of the two is listed first. When a wrong answer
+is costly, ask in a couple of orders on your own examples, and treat
+answers that change with the order as uncertain. Put a catch-all such as
+“other” last. The probabilities always come back keyed by your labels,
+whatever the order.
+
+**Ask about the state, not the world.** “Does the customer say they will
+cancel?” is answerable from the text; “Will the customer cancel?” asks
+the model to guess. Negated wording (“Is this *not* spam?”) is a known
+weak spot; prefer the positive statement and read `1 - p` if you need
+the opposite.
+
+**Reword a question that misses.** Small changes in wording can matter a
+lot. Here three wordings of the same yes/no question are asked about
+texts where the answer is known:
+
+``` r
+
+texts <- c(
+  "Duplicate charge. We were billed twice for March. Refund it or we cancel.",
+  "Your service has been unreliable for months. Please close my account.",
+  "Please refund the duplicate today or we will cancel our plan.",
+  "Since the last update the app closes as soon as I log in.",
+  "We're a team of 50 and want a quote for the annual plan."
+)
+truth <- c(TRUE, TRUE, TRUE, FALSE, FALSE)
+wordings <- laya_questions(
+  threaten = laya_noul("Does the user threaten to cancel or leave?"),
+  say      = laya_noul("Does the customer say they will cancel or leave?"),
+  mention  = laya_noul("Does the customer mention cancelling their plan, subscription or account?")
+)
+p <- sapply(laya_predict_batch(texts, wordings), function(r) {
+  vapply(r$answers, function(a) a$noul, numeric(1))
+})
+data.frame(cancels = truth, round(t(p), 2))
+#>   cancels threaten  say mention
+#> 1    TRUE     0.02 0.80    0.97
+#> 2    TRUE     0.18 0.99    0.96
+#> 3    TRUE     0.03 0.68    0.98
+#> 4   FALSE     0.01 0.43    0.64
+#> 5   FALSE     0.01 0.03    0.00
+```
+
+“Threaten” misses every cancellation. “Say they will” gets all five
+right, though the crash report sits closer to 0.5 than you might like.
+“Mention” scores the cancellations highest but also flags the crash
+report. No wording is perfect, and the only way to know is to measure:
+keep a handful of labelled examples like these for each question you
+rely on, and check every new wording against them.
+
+**Keep a choice to about 20 options.** All the options of a question
+share a fixed token budget (below). With many more, each option gets
+only a few tokens and they stop being distinguishable. Split a large
+label set into a coarse question and a fine one instead.
+
+**Check calibration on your data before gating.** Confidence is
+calibrated on the training distribution. Before relying on
+`min_confidence`, look at a few dozen labelled examples from your own
+workflow and check that the answers given with high confidence are
+mostly right.
+
+## The token budget
+
+A checkpoint reads at most `max_len` tokens: your options (the “head”)
+and the state share them. The options may use up to `head_max_len`
+tokens; the state gets what’s left.
+[`laya_engine_info()`](https://gueyenono.github.io/layaR/reference/laya_engine_info.md)
+shows the budgets:
+
+``` r
+
+info <- laya_engine_info(laya_default_engine())
+info[c("checkpoint", "max_len", "head_max_len")]
+#> $checkpoint
+#> [1] "multilingual"
+#> 
+#> $max_len
+#> [1] 1024
+#> 
+#> $head_max_len
+#> [1] 256
+```
+
+A state too long for the room left is truncated, and the result says so:
+
+``` r
+
+long_text <- strrep("The invoice was wrong again. ", 400)
+res <- laya_predict(long_text, qs)
+str(res$usage[c("input_tokens", "truncated")])
+#> List of 2
+#>  $ input_tokens: int 3072
+#>  $ truncated   : logi TRUE
+```
+
+For long documents, use
+[`laya_predict_long()`](https://gueyenono.github.io/layaR/reference/laya_predict.md),
+which scans the text in overlapping windows (see
+[`vignette("data-frames", package = "layaR")`](https://gueyenono.github.io/layaR/articles/data-frames.md)).
+
+If the options don’t fit at all, the call fails with a
+`laya_error_no_markers` error you can catch:
+
+``` r
+
+tryCatch(
+  laya_predict("Hello", qs, max_len = 32),
+  laya_error_no_markers = function(e) cat("Options don't fit:", conditionMessage(e), "\n")
+)
+#> Options don't fit: question 'department': only 3 of its 4 option markers fit in max_len=32 with
+#> head_max_len=256 spent on the question; lower head_max_len, raise max_len, or use fewer
+#> options
+```
+
+`max_len` and `head_max_len` can be raised per call (up to 8192), which
+helps when a question has many long options. The checkpoints were
+trained at their shipped budgets, so measure accuracy on your own
+examples if you change them.
+
+## Sharing questions with Python
+
+Question sets are stored in the Python SDK’s format, so they move
+between the two languages unchanged:
+
+``` r
+
+cat(laya_questions_to_json(qs["churn_risk"]))
+#> {
+#>   "churn_risk": {
+#>     "type": "noul",
+#>     "instructions": "Does the customer say they will cancel or leave?"
+#>   }
+#> }
+path <- tempfile(fileext = ".json")
+laya_questions_to_json(qs, path)
+identical(as_laya_questions(path), qs)
+#> [1] TRUE
+```
+
+[`as_laya_questions()`](https://gueyenono.github.io/layaR/reference/as_laya_questions.md)
+also reads a JSON string or a list in the same format.
