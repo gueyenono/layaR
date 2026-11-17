@@ -23,7 +23,7 @@ laya_predict_batch(
   questions,
   engine = laya_default_engine(),
   ...,
-  batch_size = NULL,
+  batch_size = getOption("layaR.batch_size", 1L),
   sort_by_length = FALSE,
   min_confidence = NULL,
   lang = NULL,
@@ -58,8 +58,10 @@ laya_predict_long(
 
 \item{min_confidence}{Optional abstention gate: a threshold in \verb{[0, 1]},
 or a named numeric vector of thresholds per option-count bucket (names
-from \code{\link[=laya_bucket_keys]{laya_bucket_keys()}}, plus \code{"default"}). Every answer then reports
-\code{abstention}: \code{"passed"}, \code{"abstained"} or \code{"unevaluated"}.}
+from \code{\link[=laya_bucket_keys]{laya_bucket_keys()}}, plus \code{"default"}). The threshold is compared
+with each answer's \code{answer_confidence} (for a choice question, the
+chosen option's probability), as in the Python SDK. Every answer then
+reports \code{abstention}: \code{"passed"}, \code{"abstained"} or \code{"unevaluated"}.}
 
 \item{lang}{Optional language code (e.g. \code{"fr"}) selecting per-language
 calibration temperatures, when the engine has them.}
@@ -71,11 +73,16 @@ options.}
 \item{states}{A character vector, a list of states, or a data frame
 (each row becomes a named list).}
 
-\item{batch_size}{States per forward pass. \code{NULL} sends each chunk in one
-pass.}
+\item{batch_size}{States per forward pass. Defaults to the
+\code{layaR.batch_size} option, or 1: on a CPU, one state per pass is usually
+fastest, because a batch pads every state to the longest one (see
+\code{vignette("models-and-performance", package = "layaR")}). Larger batches
+can pay off on other hardware. \code{NULL} sends each chunk in one pass, as
+the Python SDK does by default. Results are the same either way.}
 
 \item{sort_by_length}{Group similarly sized states within a chunk to
-reduce padding (only with a \code{batch_size} smaller than the chunk).}
+reduce padding (only with a \code{batch_size} above 1 and smaller than the
+chunk).}
 
 \item{chunk_size}{States sent to the engine per call. Between chunks R can
 be interrupted and the progress bar updates.}

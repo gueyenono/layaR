@@ -1,4 +1,59 @@
-url: ~
+url: https://gueyenono.github.io/layaR/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+articles:
+  - title: Guides
+    navbar: ~
+    contents:
+      - '`writing-questions`'
+      - '`data-frames`'
+      - '`models-and-performance`'
+
+reference:
+  - title: Questions
+    desc: Build typed questions, or use a ready-made set.
+    contents:
+      - laya_question
+      - laya_questions
+      - laya_preset
+      - as_laya_questions
+      - laya_validate_questions
+      - laya_questions_to_json
+  - title: Predicting
+    contents:
+      - laya_predict
+      - laya_annotate
+      - laya_bucket_keys
+  - title: Results
+    contents:
+      - laya_result
+  - title: Engines
+    desc: A loaded checkpoint. The prediction functions use a default engine.
+    contents:
+      - laya_engine
+      - laya_default_engine
+      - laya_engine_info
+  - title: Models
+    desc: Download, import and list exported checkpoints.
+    contents:
+      - laya_models
+      - laya_download_model
+      - laya_import_model
+      - laya_remove_model
+      - laya_model_root
+  - title: Text utilities
+    desc: Language detection and email cleaning; no model needed.
+    contents:
+      - laya_detect_language
+      - laya_clean_email
+      - laya_email_state
+  - title: Errors and options
+    contents:
+      - laya_conditions
+      - layaR-package

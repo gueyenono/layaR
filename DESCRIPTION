@@ -13,6 +13,8 @@ Description: Run Laya System 1 decision models (typed choice, score and
     through the laya-onnx Rust crate and ONNX Runtime. No Python or server
     is required at prediction time.
 License: Apache License (>= 2)
+URL: https://gueyenono.github.io/layaR/, https://github.com/gueyenono/layaR
+BugReports: https://github.com/gueyenono/layaR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
@@ -22,11 +24,14 @@ SystemRequirements: Cargo (Rust's package manager), rustc >= 1.85.0, xz,
 Depends: 
     R (>= 4.2)
 Suggests:
+    knitr,
     parallel,
+    rmarkdown,
     testthat (>= 3.0.0),
     tibble,
     withr
 Config/testthat/edition: 3
+VignetteBuilder: knitr
 Imports: 
     cli,
     curl (>= 5.0.0),
