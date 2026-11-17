@@ -9,6 +9,7 @@ mod logging;
 mod options;
 mod questions;
 mod results;
+mod text;
 
 use envelope::{BResult, BridgeError, envelope};
 use extendr_api::prelude::*;
@@ -262,6 +263,31 @@ fn rs_artifacts_complete(dir: &str) -> bool {
     ModelArtifacts::is_complete(dir)
 }
 
+/// Language analysis of each state in a JSON array (no model needed).
+/// @noRd
+#[extendr]
+fn rs_detect_language(states_json: &str) -> Robj {
+    envelope(|| Ok(json_robj(&text::detect_languages(states_json)?)))
+}
+
+/// Python's `clean_email_body` over a JSON array of bodies; `max_chars` is signed, as in Python.
+/// @noRd
+#[extendr]
+fn rs_clean_email(bodies_json: &str, max_chars: f64) -> Robj {
+    envelope(|| Ok(json_robj(&text::clean_emails(bodies_json, max_chars as i64)?)))
+}
+
+/// Python's `email_state`. An empty `sender` means none.
+/// @noRd
+#[extendr]
+fn rs_email_state(subject: &str, body: &str, sender: &str, clean: bool, max_chars: f64, extra_json: &str) -> Robj {
+    envelope(|| {
+        let sender = (!sender.is_empty()).then_some(sender);
+        let state = text::email_state(subject, body, sender, clean, max_chars as i64, extra_json)?;
+        Ok(json_robj(&state))
+    })
+}
+
 /// Versions of the bridge and the Rust libraries it is built on.
 /// @noRd
 #[extendr]
@@ -286,5 +312,8 @@ extendr_module! {
     fn rs_preset;
     fn rs_bucket_keys;
     fn rs_artifacts_complete;
+    fn rs_detect_language;
+    fn rs_clean_email;
+    fn rs_email_state;
     fn rs_versions;
 }

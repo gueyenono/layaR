@@ -21,7 +21,7 @@ test_that("argument checks run before any model is needed", {
 })
 
 test_that("a missing model gives a helpful classed error", {
-  withr::local_options(layaR.model_root = withr::local_tempdir())
+  withr::local_options(layaR.model_root = withr::local_tempdir(), layaR.shared_cache = FALSE)
   expect_false(laya_model_available())
   expect_error(laya_engine("english"), class = "laya_error_model_not_found")
 })

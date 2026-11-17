@@ -782,6 +782,26 @@ operating systems in CI.
    dependencies into a dedicated virtualenv and runs `export_onnx.py`. The script isn't in the
    PyPI wheel, so either fetch it at a pinned commit or ship it in `inst/python/` with attribution.
 
+**Status (2026-11-16, branch `phase5-models`).**
+- `models.R`: `laya_models()`, `laya_download_model()`, `laya_import_model()` (symlink or copy)
+  and `laya_remove_model()`. Downloads mirror laya-rust: the fused layout is probed first, then
+  split, under upstream's repo layout (english at the root). They use resumable
+  `curl::multi_download()` into a staging folder that is moved into place only once complete, and
+  `HF_ENDPOINT` and `HF_TOKEN` are honoured. While nothing is published, the real upstream repo
+  gives `laya_error_model_not_published` with export and import steps. The shared cross-SDK cache
+  (`~/.cache/laya/onnx`) is read but never written; `options(layaR.shared_cache = FALSE)` turns
+  it off. Tests run offline against a fake repo over `file://`.
+- `annotate.R`: `laya_annotate()`. Choice questions give factors (levels are the options), score
+  questions give the expected level, and noul questions give P(true). It adds `_confidence`, and
+  `_abstained` when gated, plus an optional `_probabilities` list-column. Rows whose state is all
+  `NA` get `NA` answers, and tibbles stay tibbles.
+- `text.R`: `laya_detect_language()`, `laya_clean_email()` and `laya_email_state()` (with
+  Python's `sender` argument name), through new bridge functions. They match Python on all 261
+  language probes and all 275 email probes from laya-rust's routing golden, which are now
+  fixtures.
+- Not done yet: re-hosting the exports (needs a Hugging Face account and the user's go-ahead),
+  and the optional `laya_export_model()`.
+
 ### Phase 6 — Documentation, performance and release 0.1.0 (3–5 days)
 
 1. Vignettes: getting started, writing questions (option order, head budget, `NoMarkers`), data
