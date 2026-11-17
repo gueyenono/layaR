@@ -68,15 +68,20 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>layaR builds from source and needs a Rust toolchain (rustc 1.85 or newer) and, on Linux, OpenSSL headers (<code>libssl-dev</code> / <code>openssl-devel</code>).</p>
+<p><strong>Platforms.</strong> layaR runs on Linux (x86_64 and arm64) and on Macs with Apple silicon. Windows and Intel Macs are not supported yet: the ONNX Runtime library layaR builds against has no prebuilt version for them. Windows support is planned.</p>
+<p>Install from r-universe. On a Mac it gives you a ready-made binary; on Linux it builds from source (see below):</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"layaR"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://gueyenono.r-universe.dev"</span>,</span>
+<span>                                    <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Building from source, on Linux or with <code>install_github()</code>, needs a Rust toolchain (rustc 1.85 or newer) and, on Linux, OpenSSL headers (<code>libssl-dev</code> / <code>openssl-devel</code>).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"gueyenono/layaR"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="getting-a-model">Getting a model<a class="anchor" aria-label="anchor" href="#getting-a-model"></a>
 </h3>
 <p>layaR needs an ONNX export of a Laya checkpoint (1.3 to 1.6 GB each). <code><a href="reference/laya_download_model.html">laya_download_model()</a></code> fetches one from <a href="https://huggingface.co/gueyenono/laya-onnx" class="external-link"><code>gueyenono/laya-onnx</code></a>, which holds ONNX exports of the three upstream checkpoints (unchanged weights, Apache-2.0):</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/laya_download_model.html">laya_download_model</a></span><span class="op">(</span><span class="st">"multilingual"</span><span class="op">)</span>   <span class="co"># also "english" and "typed-decisions"</span></span>
 <span><span class="fu"><a href="reference/laya_models.html">laya_models</a></span><span class="op">(</span><span class="op">)</span>   <span class="co"># (paths shortened)</span></span>
 <span><span class="co">#&gt;        checkpoint installed                                  path source layout size_gb</span></span>
@@ -84,9 +89,9 @@
 <span><span class="co">#&gt; 2         english     FALSE         ~/.cache/R/layaR/onnx/english   &lt;NA&gt;   &lt;NA&gt;      NA</span></span>
 <span><span class="co">#&gt; 3 typed-decisions     FALSE ~/.cache/R/layaR/onnx/typed-decisions   &lt;NA&gt;   &lt;NA&gt;      NA</span></span></code></pre></div>
 <p>To use an export you made yourself with the script from the Laya repository, import it instead:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">pip</span> install laya <span class="st">"torch&gt;=2.9"</span> onnx onnxscript onnxruntime transformers safetensors huggingface_hub</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="ex">python</span> laya-rust/tools/export_onnx.py <span class="at">--model</span> multilingual <span class="at">--out</span> ~/laya-exports</span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">pip</span> install laya <span class="st">"torch&gt;=2.9"</span> onnx onnxscript onnxruntime transformers safetensors huggingface_hub</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="ex">python</span> laya-rust/tools/export_onnx.py <span class="at">--model</span> multilingual <span class="at">--out</span> ~/laya-exports</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/laya_import_model.html">laya_import_model</a></span><span class="op">(</span><span class="st">"~/laya-exports/multilingual"</span>, <span class="st">"multilingual"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="reference/laya_model_root.html">laya_model_root()</a></code> explains where models live. A model exported for Laya’s Rust or TypeScript SDK (in <code>~/.cache/laya/onnx</code>) is found too.</p>
 </div>
@@ -94,7 +99,7 @@
 <div class="section level2">
 <h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gueyenono.github.io/layaR/">layaR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">questions</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/laya_questions.html">laya_questions</a></span><span class="op">(</span></span>
@@ -132,7 +137,7 @@
 <div class="section level3">
 <h3 id="many-states">Many states<a class="anchor" aria-label="anchor" href="#many-states"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tickets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Refund my duplicate charge"</span>, <span class="st">"The login page crashes"</span>, <span class="st">"What does Pro cost?"</span><span class="op">)</span></span>
 <span><span class="va">batch</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">tickets</span>, <span class="va">questions</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">batch</span><span class="op">)</span></span></code></pre></div>
@@ -140,7 +145,7 @@
 <div class="section level3">
 <h3 id="presets-abstention-long-documents">Presets, abstention, long documents<a class="anchor" aria-label="anchor" href="#presets-abstention-long-documents"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>message <span class="op">=</span> <span class="st">"My payment failed twice"</span><span class="op">)</span>, <span class="fu"><a href="reference/laya_preset.html">laya_preset</a></span><span class="op">(</span><span class="st">"triage"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Report "abstained" instead of trusting a low-confidence answer</span></span>
@@ -152,7 +157,7 @@
 <div class="section level3">
 <h3 id="a-data-frame-in-answers-out">A data frame in, answers out<a class="anchor" aria-label="anchor" href="#a-data-frame-in-answers-out"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tickets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  subject <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Duplicate charge"</span>, <span class="st">"App crashes on login"</span><span class="op">)</span>,</span>
 <span>  body <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"We were billed twice. Refund it or we cancel."</span>, <span class="st">"Since the update I can't log in."</span><span class="op">)</span></span>
@@ -164,7 +169,7 @@
 <div class="section level3">
 <h3 id="emails-and-languages">Emails and languages<a class="anchor" aria-label="anchor" href="#emails-and-languages"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/laya_email_state.html">laya_email_state</a></span><span class="op">(</span>subject <span class="op">=</span> <span class="st">"Refund"</span>, body <span class="op">=</span> <span class="va">raw_body</span>, sender <span class="op">=</span> <span class="st">"ana@example.com"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">state</span>, <span class="fu"><a href="reference/laya_preset.html">laya_preset</a></span><span class="op">(</span><span class="st">"email"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -175,7 +180,7 @@
 <h3 id="sharing-questions-with-python">Sharing questions with Python<a class="anchor" aria-label="anchor" href="#sharing-questions-with-python"></a>
 </h3>
 <p>Question sets use the Python SDK’s format, so they move between languages:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/laya_questions_to_json.html">laya_questions_to_json</a></span><span class="op">(</span><span class="va">questions</span>, <span class="st">"questions.json"</span><span class="op">)</span></span>
 <span><span class="va">questions</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/as_laya_questions.html">as_laya_questions</a></span><span class="op">(</span><span class="st">"questions.json"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -184,7 +189,7 @@
 <h2 id="errors">Errors<a class="anchor" aria-label="anchor" href="#errors"></a>
 </h2>
 <p>Every error has class <code>laya_error</code> and a specific <code>laya_error_&lt;kind&gt;</code>, so you can handle one kind on its own:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">state</span>, <span class="va">questions</span>, max_len <span class="op">=</span> <span class="fl">32</span><span class="op">)</span>,</span>
 <span>  laya_error_no_markers <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Options don't fit: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span>
