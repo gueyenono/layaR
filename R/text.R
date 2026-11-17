@@ -28,7 +28,10 @@
 #'   "मार्च का बिल दो बार लिया गया",
 #'   "glömt lösenord"
 #' ))
-#' laya_detect_language(list(subject = "Refund", body = "Hola, me cobraron dos veces. \u00bfPueden devolverme el dinero?"))
+#' laya_detect_language(list(
+#'   subject = "Refund",
+#'   body = "Hola, me cobraron dos veces. \u00bfPueden devolverme el dinero?"
+#' ))
 #' @export
 laya_detect_language <- function(states) {
   if (is.list(states) && !is.data.frame(states) && !is.null(names(states))) {

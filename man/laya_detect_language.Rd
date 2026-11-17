@@ -36,5 +36,8 @@ laya_detect_language(c(
   "मार्च का बिल दो बार लिया गया",
   "glömt lösenord"
 ))
-laya_detect_language(list(subject = "Refund", body = "Hola, me cobraron dos veces. \u00bfPueden devolverme el dinero?"))
+laya_detect_language(list(
+  subject = "Refund",
+  body = "Hola, me cobraron dos veces. \u00bfPueden devolverme el dinero?"
+))
 }
