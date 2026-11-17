@@ -33,21 +33,35 @@ remotes::install_github("gueyenono/layaR")
 
 ### Getting a model
 
-layaR needs an exported ONNX checkpoint (about 1.3 GB). The Laya authors
-haven’t published ONNX files yet
-([NandhaKishorM/laya#1504](https://github.com/NandhaKishorM/laya/issues/1504)),
-so for now export one once with Python, using the script from the Laya
-repository:
+layaR needs an ONNX export of a Laya checkpoint (1.3 to 1.6 GB each).
+`laya_download_model()` fetches one from
+[`gueyenono/laya-onnx`](https://huggingface.co/gueyenono/laya-onnx),
+which holds ONNX exports of the three upstream checkpoints (unchanged
+weights, Apache-2.0):
+
+``` r
+laya_download_model("multilingual")   # also "english" and "typed-decisions"
+laya_models()   # (paths shortened)
+#>        checkpoint installed                                  path source layout size_gb
+#> 1    multilingual      TRUE    ~/.cache/R/layaR/onnx/multilingual  layaR  fused    1.32
+#> 2         english     FALSE         ~/.cache/R/layaR/onnx/english   <NA>   <NA>      NA
+#> 3 typed-decisions     FALSE ~/.cache/R/layaR/onnx/typed-decisions   <NA>   <NA>      NA
+```
+
+To use an export you made yourself with the script from the Laya
+repository, import it instead:
 
 ``` sh
 pip install laya "torch>=2.9" onnx onnxscript onnxruntime transformers safetensors huggingface_hub
-python laya-rust/tools/export_onnx.py --model multilingual \
-  --out "$(Rscript -e 'cat(tools::R_user_dir("layaR", "cache"))')/onnx"
+python laya-rust/tools/export_onnx.py --model multilingual --out ~/laya-exports
 ```
 
-layaR looks for models in `laya_model_root()`: the `layaR.model_root`
-option, then the `LAYA_ONNX_ROOT` environment variable, then the user
-cache folder.
+``` r
+laya_import_model("~/laya-exports/multilingual", "multilingual")
+```
+
+`laya_model_root()` explains where models live. A model exported for
+Laya’s Rust or TypeScript SDK (in `~/.cache/laya/onnx`) is found too.
 
 ## Quickstart
 
@@ -107,6 +121,27 @@ laya_predict(state, questions, min_confidence = 0.8)
 
 # Scan a document longer than the model's context window
 laya_predict_long(contract_text, questions)
+```
+
+### A data frame in, answers out
+
+``` r
+tickets <- data.frame(
+  subject = c("Duplicate charge", "App crashes on login"),
+  body = c("We were billed twice. Refund it or we cancel.", "Since the update I can't log in.")
+)
+laya_annotate(tickets, questions, state = c("subject", "body"))
+# adds department (a factor), urgency, churn_risk and a _confidence column for each
+```
+
+### Emails and languages
+
+``` r
+state <- laya_email_state(subject = "Refund", body = raw_body, sender = "ana@example.com")
+laya_predict(state, laya_preset("email"))
+
+# Pick a checkpoint: the English one only reads English
+laya_detect_language(c("Please refund me", "Me cobraron dos veces. \u00bfPueden devolverme el dinero?"))
 ```
 
 ### Sharing questions with Python

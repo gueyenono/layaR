@@ -80,3 +80,18 @@ for (ck in checkpoints) {
   message(sprintf("%s: %d cases (%d core), %.0f KB", ck, length(cases),
                   sum(vapply(cases, `[[`, NA, "core")), file.size(path) / 1024))
 }
+
+# Text utilities: Python-recorded probes from laya-rust's routing golden.
+text_dir <- "tests/testthat/fixtures/text"
+dir.create(text_dir, recursive = TRUE, showWarnings = FALSE)
+email <- jsonlite::fromJSON(file.path(golden, "routing", "email_probe.json"), simplifyVector = FALSE)
+lang <- jsonlite::fromJSON(file.path(golden, "routing", "lang_probe.json"), simplifyVector = FALSE)
+lang <- lapply(lang, function(case) case[c("label", "state", "analyse")])
+write_fixture <- function(x, name) {
+  path <- file.path(text_dir, name)
+  writeLines(jsonlite::toJSON(x, auto_unbox = TRUE, digits = I(17), always_decimal = TRUE,
+                              null = "null", na = "null"), path, useBytes = TRUE)
+  message(sprintf("%s: %.0f KB", name, file.size(path) / 1024))
+}
+write_fixture(email, "email.json")
+write_fixture(lang, "lang.json")

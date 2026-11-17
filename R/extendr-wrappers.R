@@ -50,6 +50,18 @@ rs_bucket_keys <- function() .Call(wrap__rs_bucket_keys)
 #' @noRd
 rs_artifacts_complete <- function(dir) .Call(wrap__rs_artifacts_complete, dir)
 
+#' Language analysis of each state in a JSON array (no model needed).
+#' @noRd
+rs_detect_language <- function(states_json) .Call(wrap__rs_detect_language, states_json)
+
+#' Python's `clean_email_body` over a JSON array of bodies; `max_chars` is signed, as in Python.
+#' @noRd
+rs_clean_email <- function(bodies_json, max_chars) .Call(wrap__rs_clean_email, bodies_json, max_chars)
+
+#' Python's `email_state`. An empty `sender` means none.
+#' @noRd
+rs_email_state <- function(subject, body, sender, clean, max_chars, extra_json) .Call(wrap__rs_email_state, subject, body, sender, clean, max_chars, extra_json)
+
 #' Versions of the bridge and the Rust libraries it is built on.
 #' @noRd
 rs_versions <- function() .Call(wrap__rs_versions)

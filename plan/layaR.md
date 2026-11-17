@@ -499,7 +499,7 @@ tickets |>
 laya_model_root()                  # option layaR.model_root > env LAYA_ONNX_ROOT > R_user_dir(cache)/onnx
 laya_model_path("multilingual")
 laya_models()                      # data.frame: checkpoint, path, installed, layout, size_gb
-laya_download_model("multilingual", repo = "convaiinnovations/laya", token = Sys.getenv("HF_TOKEN"))
+laya_download_model("multilingual", repo = "gueyenono/laya-onnx", token = Sys.getenv("HF_TOKEN"))
 laya_import_model("~/exports/onnx/multilingual", checkpoint = "multilingual", method = c("symlink", "copy"))
 laya_export_model(...)             # optional, Phase 5: drives export_onnx.py via reticulate
 ```
@@ -781,6 +781,36 @@ operating systems in CI.
 4. Optional: `laya_export_model()` through reticulate. It installs the exporter's Python
    dependencies into a dedicated virtualenv and runs `export_onnx.py`. The script isn't in the
    PyPI wheel, so either fetch it at a pinned commit or ship it in `inst/python/` with attribution.
+
+**Status (2026-11-16, branch `phase5-models`).**
+- `models.R`: `laya_models()`, `laya_download_model()`, `laya_import_model()` (symlink or copy)
+  and `laya_remove_model()`. Downloads mirror laya-rust: the fused layout is probed first, then
+  split, under upstream's repo layout (english at the root). They use resumable
+  `curl::multi_download()` into a staging folder that is moved into place only once complete, and
+  `HF_ENDPOINT` and `HF_TOKEN` are honoured. While nothing is published, the real upstream repo
+  gives `laya_error_model_not_published` with export and import steps. The shared cross-SDK cache
+  (`~/.cache/laya/onnx`) is read but never written; `options(layaR.shared_cache = FALSE)` turns
+  it off. Tests run offline against a fake repo over `file://`.
+- `annotate.R`: `laya_annotate()`. Choice questions give factors (levels are the options), score
+  questions give the expected level, and noul questions give P(true). It adds `_confidence`, and
+  `_abstained` when gated, plus an optional `_probabilities` list-column. Rows whose state is all
+  `NA` get `NA` answers, and tibbles stay tibbles.
+- `text.R`: `laya_detect_language()`, `laya_clean_email()` and `laya_email_state()` (with
+  Python's `sender` argument name), through new bridge functions. They match Python on all 261
+  language probes and all 275 email probes from laya-rust's routing golden, which are now
+  fixtures.
+- Re-hosting done (2026-11-16): all three exports are on `gueyenono/laya-onnx` (public,
+  upstream layout), which is now `laya_download_model()`'s default. The repo ships the Apache-2.0
+  text, an unofficial-redistribution notice, the list of changes, the mmBERT MIT notice
+  (`THIRD_PARTY_NOTICES.md`) and the Laya, ModernBERT and mmBERT citations. Every file was
+  checked by SHA-256, and parity passes on the downloaded models.
+- typed-decisions: upstream's `export_onnx.py --verify` shape sweep compares against the first
+  architecture-compatible `model.safetensors` in the HF cache (the English root weights), so it
+  reported a false 0.28 logit gap. Against the right weights the gap is 3.3e-7.
+- Licensing of layaR itself: `LICENSE.note` (from `rextendr::write_license_note()`, plus ONNX
+  Runtime) lists the 162 crates linked into the binary, all permissive. DESCRIPTION lists
+  Convai Innovations, Microsoft and the crate authors as `cph`. The fixtures credit upstream.
+- Not done: the optional `laya_export_model()`.
 
 ### Phase 6 — Documentation, performance and release 0.1.0 (3–5 days)
 

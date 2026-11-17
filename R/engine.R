@@ -57,15 +57,8 @@ laya_engine <- function(checkpoint = c("multilingual", "english", "typed-decisio
   checkpoint <- match.arg(checkpoint)
   explicit_dir <- !is.null(model_dir)
   if (is.null(model_dir)) {
-    model_dir <- laya_model_path(checkpoint)
-    if (!rs_artifacts_complete(model_dir)) {
-      laya_abort(c(
-        "No {.val {checkpoint}} model found at {.path {model_dir}}.",
-        i = "Export the ONNX model once with Laya's {.file export_onnx.py} and put it there,",
-        i = "or point {.arg model_dir} at an existing export, or set the {.envvar LAYA_ONNX_ROOT}",
-        " " = "environment variable / {.code options(layaR.model_root = )} to its parent folder."
-      ), kind = "model_not_found")
-    }
+    model_dir <- find_model(checkpoint)
+    if (is.null(model_dir)) abort_no_model(checkpoint)
   } else {
     model_dir <- normalizePath(path.expand(model_dir), mustWork = FALSE)
   }
@@ -204,46 +197,6 @@ format.laya_engine <- function(x, ...) {
 print.laya_engine <- function(x, ...) {
   cat(format(x), sep = "\n")
   invisible(x)
-}
-
-# ---- model locations (the full set of model helpers comes in Phase 5) ----
-
-#' Where models live
-#'
-#' layaR looks for exported checkpoints in a model root folder with one
-#' subfolder per checkpoint (`multilingual/`, `english/`,
-#' `typed-decisions/`). The root is, in order: the `layaR.model_root`
-#' option, the `LAYA_ONNX_ROOT` environment variable (shared with Laya's
-#' Rust SDK), or the user cache folder `tools::R_user_dir("layaR", "cache")`
-#' plus `onnx/`.
-#'
-#' @param checkpoint A checkpoint name.
-#' @return `laya_model_root()` and `laya_model_path()` return paths;
-#'   `laya_model_available()` returns `TRUE` when a complete export is found.
-#' @examples
-#' laya_model_root()
-#' laya_model_path("english")
-#' laya_model_available()
-#' @export
-laya_model_root <- function() {
-  root <- getOption("layaR.model_root")
-  if (is.null(root) || !nzchar(root)) root <- Sys.getenv("LAYA_ONNX_ROOT")
-  if (!nzchar(root)) root <- file.path(tools::R_user_dir("layaR", "cache"), "onnx")
-  normalizePath(path.expand(root), mustWork = FALSE)
-}
-
-#' @rdname laya_model_root
-#' @export
-laya_model_path <- function(checkpoint = c("multilingual", "english", "typed-decisions")) {
-  checkpoint <- match.arg(checkpoint)
-  file.path(laya_model_root(), checkpoint)
-}
-
-#' @rdname laya_model_root
-#' @export
-laya_model_available <- function(checkpoint = getOption("layaR.checkpoint", "multilingual")) {
-  checkpoint <- match.arg(checkpoint, checkpoints)
-  rs_artifacts_complete(laya_model_path(checkpoint))
 }
 
 # ---- small helpers ----
