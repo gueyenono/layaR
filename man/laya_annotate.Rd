@@ -57,7 +57,9 @@ number of levels minus one);
 With \code{confidence = TRUE} each answer also gets a \verb{<id>_confidence} column.
 With \code{min_confidence} (passed in \code{...}), each gated answer also gets a
 logical \verb{<id>_abstained} column. The answer is kept either way; filter on
-the column to drop low-confidence answers.
+the column to drop low-confidence answers. The gate compares the threshold
+with each answer's \code{answer_confidence} (for a choice question, the chosen
+option's probability), which can differ from the \verb{<id>_confidence} column.
 }
 \examples{
 if (laya_model_available()) {

@@ -162,7 +162,13 @@ laya_default_engine <- function(checkpoint = getOption("layaR.checkpoint", "mult
 #' @export
 laya_engine_info <- function(engine) {
   engine_ptr(engine)
-  engine$info
+  info <- engine$info
+  # Upstream reports the checkpoint only when it resolved the path itself;
+  # layaR knows it whenever the engine was loaded by name.
+  if (is.null(info$checkpoint) && !is.na(engine$checkpoint %||% NA)) {
+    info$checkpoint <- engine$checkpoint
+  }
+  info
 }
 
 #' @rdname laya_engine_info

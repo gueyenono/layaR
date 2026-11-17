@@ -84,7 +84,7 @@ questions <- laya_questions(
   ),
   urgency    = laya_score("How urgent is this request?",
                           c("not urgent", "soon", "critical deadline or blocking issue")),
-  churn_risk = laya_noul("Does the user threaten to cancel or leave?")
+  churn_risk = laya_noul("Does the customer say they will cancel or leave?")
 )
 
 state <- list(
@@ -94,20 +94,26 @@ state <- list(
 
 res <- laya_predict(state, questions)
 res
-#> <laya_result> laya-rl-agent · 3 answers · 264 input tokens
+#> <laya_result> laya-rl-agent · 3 answers · 235 input tokens
 #>   department  choice  billing        p 1.00  confidence 1.00
-#>   urgency     score   1.90 (0–2)    confidence 0.69
-#>   churn_risk  noul    0.13 → FALSE  confidence 0.87
+#>   urgency     score   1.87 (0–2)    confidence 0.64
+#>   churn_risk  noul    0.88 → TRUE   confidence 0.88
 
 as.data.frame(res)
 #>           id   type  answer  value confidence answer_confidence act_probability abstention
 #> 1 department choice billing 1.0000     1.0000            1.0000               1       <NA>
-#> 2    urgency  score    1.90 1.8974     0.6932            0.8998               1       <NA>
-#> 3 churn_risk   noul   FALSE 0.1345     0.8655            0.8655               1       <NA>
+#> 2    urgency  score    1.87 1.8685     0.6371            0.8721               1       <NA>
+#> 3 churn_risk   noul    TRUE 0.8782     0.8782            0.8782               1       <NA>
 ```
 
 The first call loads the model (a few seconds); later calls take a few
-hundred milliseconds on a CPU.
+hundred milliseconds on a CPU. Wording matters: asking whether the user
+"threatens" to cancel misses this ticket, while "says they will cancel"
+gets it (see `vignette("writing-questions")`).
+
+The guides cover the rest: `vignette("layaR")` to get started, then
+writing questions, data frames and long documents, and models and
+performance.
 
 ### Many states
 
@@ -166,7 +172,7 @@ you can handle one kind on its own:
 
 ```{r}
 tryCatch(
-  laya_predict(state, questions, max_len = 64),
+  laya_predict(state, questions, max_len = 32),
   laya_error_no_markers = function(e) message("Options don't fit: ", conditionMessage(e))
 )
 ```

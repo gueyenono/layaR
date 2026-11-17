@@ -14,7 +14,9 @@
 #' With `confidence = TRUE` each answer also gets a `<id>_confidence` column.
 #' With `min_confidence` (passed in `...`), each gated answer also gets a
 #' logical `<id>_abstained` column. The answer is kept either way; filter on
-#' the column to drop low-confidence answers.
+#' the column to drop low-confidence answers. The gate compares the threshold
+#' with each answer's `answer_confidence` (for a choice question, the chosen
+#' option's probability), which can differ from the `<id>_confidence` column.
 #'
 #' @param data A data frame or tibble. A tibble stays a tibble.
 #' @param questions A question set ([laya_questions()], a preset, or anything

@@ -90,6 +90,7 @@ test_that("engines print, report info, close, and survive saveRDS", {
   eng <- laya_engine("multilingual", intra_op_threads = 1)
   expect_output(print(eng), "<laya_engine> multilingual")
   expect_identical(laya_engine_info(eng)$layout, "fused")
+  expect_identical(laya_engine_info(eng)$checkpoint, "multilingual")
 
   path <- withr::local_tempfile(fileext = ".rds")
   saveRDS(eng, path)

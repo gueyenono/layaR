@@ -1,0 +1,240 @@
+---
+title: "Getting started with layaR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with layaR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+
+layaR runs [Laya](https://huggingface.co/convaiinnovations/laya) decision
+models on your own machine. You ask typed questions about a piece of text
+(a support ticket, an email, a chat message, a prompt) and get calibrated
+answers back:
+
+* **choice**: pick one label from a fixed set of options;
+* **score**: place the text on an ordinal scale;
+* **noul** (yes/no): the probability that a statement holds.
+
+All the questions about one text are answered in a single forward pass, so
+asking five questions costs about as much as asking one. Prediction runs on
+the CPU through ONNX Runtime; no Python, server or API key is involved.
+
+## Getting a model
+
+layaR needs an ONNX export of a Laya checkpoint. Download one once (1.3 to
+1.6 GB):
+
+
+``` r
+library(layaR)
+laya_download_model("multilingual")
+```
+
+There are three checkpoints:
+
+| Checkpoint | Base encoder | Use it for |
+|---|---|---|
+| `multilingual` | mmBERT-base | text in any of 100+ languages (the default) |
+| `english` | ModernBERT-large | English text; slightly more accurate there |
+| `typed-decisions` | ModernBERT-large | four specific workflows it was fine-tuned on |
+
+`laya_models()` shows what is installed:
+
+
+``` r
+library(layaR)
+m <- laya_models()
+m$path <- sub(path.expand("~"), "~", m$path, fixed = TRUE)
+m
+#>        checkpoint installed                                  path source layout size_gb
+#> 1    multilingual      TRUE    ~/.cache/R/layaR/onnx/multilingual  layaR  fused    1.32
+#> 2         english      TRUE         ~/.cache/R/layaR/onnx/english  layaR  fused    1.69
+#> 3 typed-decisions      TRUE ~/.cache/R/layaR/onnx/typed-decisions  layaR  fused    1.69
+```
+
+`vignette("models-and-performance", package = "layaR")` covers where
+models live, importing your own export, memory and threads.
+
+## Asking questions
+
+Build a question set with `laya_questions()`. Each named argument is one
+question, and the name becomes the answer's id:
+
+
+``` r
+questions <- laya_questions(
+  department = laya_choice(
+    "Which department should handle this request?",
+    billing   = "invoices, payments, refunds",
+    technical = "bugs, outages, system errors",
+    sales     = "pricing, new contracts",
+    other     = "everything else"
+  ),
+  urgency = laya_score(
+    "How urgent is this request?",
+    c("not urgent", "soon", "critical deadline or blocking issue")
+  ),
+  churn_risk = laya_noul("Does the user threaten to cancel or leave?")
+)
+questions
+#> <laya_questions> 3 questions
+#>   department  choice Which department should handle this request?  [4 options: billing, technical, sales, other]
+#>   urgency     score  How urgent is this request?  [3 levels]
+#>   churn_risk  noul   Does the user threaten to cancel or leave?  [yes/no]
+```
+
+A state is the text the model reads. It can be a single string, or a named
+list whose field names give the model context:
+
+
+``` r
+state <- list(
+  subject = "Duplicate charge on invoice #4411",
+  body = paste("Hi, we were billed twice for March.",
+               "Please refund the duplicate today or we will cancel our plan.")
+)
+```
+
+`laya_predict()` answers every question at once. The first call loads the
+model, which takes a few seconds; the engine is then kept for the session.
+
+
+``` r
+res <- laya_predict(state, questions)
+res
+#> <laya_result> laya-rl-agent · 3 answers · 234 input tokens
+#>   department  choice  billing        p 1.00  confidence 1.00
+#>   urgency     score   1.87 (0–2)    confidence 0.64
+#>   churn_risk  noul    0.04 → FALSE  confidence 0.96
+```
+
+Two of the answers are right: the ticket is for billing, and it is fairly
+urgent. The third is wrong. The message ends with "or we will cancel our
+plan", yet the model puts the probability of a cancellation threat at
+0.04, with confidence
+0.96. A conditional threat
+phrased as a request is the kind of wording yes/no questions can miss.
+
+It is a useful reminder: confidence is calibrated on the data the
+checkpoints were trained on, not on yours, and a confident answer can still
+be wrong. Before acting on answers automatically, check a few dozen labelled
+examples from your own workflow.
+
+When a question misses, reword it. Here the word "threaten" is the problem;
+asking whether the customer *says* they will cancel gets it right:
+
+
+``` r
+reworded <- laya_questions(churn_risk = laya_noul("Does the customer say they will cancel or leave?"))
+laya_predict(state, reworded)
+#> <laya_result> laya-rl-agent · 1 answer · 76 input tokens
+#>   churn_risk  noul    0.88 → TRUE   confidence 0.88
+```
+
+`vignette("writing-questions", package = "layaR")` has more on wording.
+
+## Reading the answers
+
+`as.data.frame()` gives one row per question:
+
+
+``` r
+as.data.frame(res)
+#>           id   type  answer  value confidence answer_confidence act_probability
+#> 1 department choice billing 1.0000     1.0000            1.0000               1
+#> 2    urgency  score    1.87 1.8685     0.6371            0.8721               1
+#> 3 churn_risk   noul   FALSE 0.0360     0.9640            0.9640               1
+#>   abstention
+#> 1       <NA>
+#> 2       <NA>
+#> 3       <NA>
+```
+
+* `answer` is the label for a choice question, the expected level for a
+  score question (here between 0, "not urgent", and 2, "critical"), and
+  `TRUE`/`FALSE` for a yes/no question.
+* `value` is the chosen label's probability, the score, or P(true).
+* `confidence` is how sure the model is of its answer, from 0 to 1. The
+  checkpoints are calibrated: across many answers given with confidence
+  0.8, about 80% are right.
+
+`laya_probabilities()` shows the whole distribution, one row per option:
+
+
+``` r
+laya_probabilities(res)
+#>           id   type                              option probability
+#> 1 department choice                             billing      1.0000
+#> 2 department choice                           technical      0.0000
+#> 3 department choice                               sales      0.0000
+#> 4 department choice                               other      0.0000
+#> 5    urgency  score                          not urgent      0.0036
+#> 6    urgency  score                                soon      0.1243
+#> 7    urgency  score critical deadline or blocking issue      0.8721
+#> 8 churn_risk   noul                               false      0.9640
+#> 9 churn_risk   noul                                true      0.0360
+```
+
+The result is also a plain list in the Python SDK's shape, so you can reach
+into it directly:
+
+
+``` r
+res$answers$department$choice
+#> [1] "billing"
+res$answers$churn_risk$noul
+#> [1] 0.036
+```
+
+## When the model isn't sure
+
+Set `min_confidence` and every answer reports whether it passed the
+threshold. An abstained answer is still there; it is flagged so you can
+send it to a person instead:
+
+
+``` r
+vague <- "Hi, quick question about my account."
+as.data.frame(laya_predict(vague, questions, min_confidence = 0.8))[
+  , c("id", "answer", "confidence", "abstention")]
+#>           id  answer confidence abstention
+#> 1 department billing     0.1485  abstained
+#> 2    urgency    1.78     0.4988  abstained
+#> 3 churn_risk   FALSE     0.9966     passed
+```
+
+## Presets
+
+Five ready-made question sets come from the Python SDK. Each reads one field
+of the state:
+
+
+``` r
+laya_preset_fields()
+#>       preset state_field
+#> 1     triage     message
+#> 2      email        body
+#> 3      guard      prompt
+#> 4 moderation        post
+#> 5     router     request
+laya_predict(list(message = "My payment failed twice and nobody answers my emails!"),
+             laya_preset("triage"))
+#> <laya_result> laya-rl-agent · 5 answers · 321 input tokens
+#>   intent            choice  billing_quest… p 0.99  confidence 0.97
+#>   is_urgent         noul    0.01 → FALSE  confidence 0.99
+#>   frustration       score   1.99 (0–3)    confidence 0.17
+#>   refund_requested  noul    0.02 → FALSE  confidence 0.98
+#>   churn_risk        noul    0.00 → FALSE  confidence 1.00
+```
+
+## Next steps
+
+* `vignette("writing-questions", package = "layaR")`: how to write questions
+  the model answers well.
+* `vignette("data-frames", package = "layaR")`: many texts at once, data
+  frames, long documents, emails and languages.
+* `vignette("models-and-performance", package = "layaR")`: models, memory,
+  threads, parallel work and speed.

@@ -18,8 +18,10 @@
 #' @param ... Must be empty; the options below are named.
 #' @param min_confidence Optional abstention gate: a threshold in `[0, 1]`,
 #'   or a named numeric vector of thresholds per option-count bucket (names
-#'   from [laya_bucket_keys()], plus `"default"`). Every answer then reports
-#'   `abstention`: `"passed"`, `"abstained"` or `"unevaluated"`.
+#'   from [laya_bucket_keys()], plus `"default"`). The threshold is compared
+#'   with each answer's `answer_confidence` (for a choice question, the
+#'   chosen option's probability), as in the Python SDK. Every answer then
+#'   reports `abstention`: `"passed"`, `"abstained"` or `"unevaluated"`.
 #' @param lang Optional language code (e.g. `"fr"`) selecting per-language
 #'   calibration temperatures, when the engine has them.
 #' @param max_len,head_max_len Optional per-call token budgets overriding the
@@ -58,17 +60,23 @@ laya_predict <- function(state, questions, engine = laya_default_engine(), ...,
 #' @rdname laya_predict
 #' @param states A character vector, a list of states, or a data frame
 #'   (each row becomes a named list).
-#' @param batch_size States per forward pass. `NULL` sends each chunk in one
-#'   pass.
+#' @param batch_size States per forward pass. Defaults to the
+#'   `layaR.batch_size` option, or 1: on a CPU, one state per pass is usually
+#'   fastest, because a batch pads every state to the longest one (see
+#'   `vignette("models-and-performance", package = "layaR")`). Larger batches
+#'   can pay off on other hardware. `NULL` sends each chunk in one pass, as
+#'   the Python SDK does by default. Results are the same either way.
 #' @param sort_by_length Group similarly sized states within a chunk to
-#'   reduce padding (only with a `batch_size` smaller than the chunk).
+#'   reduce padding (only with a `batch_size` above 1 and smaller than the
+#'   chunk).
 #' @param chunk_size States sent to the engine per call. Between chunks R can
 #'   be interrupted and the progress bar updates.
 #' @param progress Show a progress bar? Defaults to `TRUE` in interactive
 #'   sessions with more than one chunk.
 #' @export
 laya_predict_batch <- function(states, questions, engine = laya_default_engine(), ...,
-                               batch_size = NULL, sort_by_length = FALSE,
+                               batch_size = getOption("layaR.batch_size", 1L),
+                               sort_by_length = FALSE,
                                min_confidence = NULL, lang = NULL,
                                max_len = NULL, head_max_len = NULL,
                                chunk_size = 64L, progress = interactive()) {
