@@ -1,9 +1,9 @@
 # Changelog
 
-## layaR (development version)
+## layaR 0.1.0
 
-First release, in preparation as 0.1.0. layaR runs Laya decision models
-locally from R through the `laya-onnx` Rust crate and ONNX Runtime.
+First release. layaR runs Laya decision models locally from R through
+the `laya-onnx` Rust crate and ONNX Runtime.
 
 ### Questions and predictions
 

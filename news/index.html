@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,10 +40,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="layar-development-version">layaR (development version)<a class="anchor" aria-label="anchor" href="#layar-development-version"></a></h2>
-<p>First release, in preparation as 0.1.0. layaR runs Laya decision models locally from R through the <code>laya-onnx</code> Rust crate and ONNX Runtime.</p>
+<h2 class="pkg-version" data-toc-text="0.1.0" id="layar-010">layaR 0.1.0<a class="anchor" aria-label="anchor" href="#layar-010"></a></h2>
+<p>First release. layaR runs Laya decision models locally from R through the <code>laya-onnx</code> Rust crate and ONNX Runtime.</p>
 <div class="section level3">
-<h3 id="questions-and-predictions-development-version">Questions and predictions<a class="anchor" aria-label="anchor" href="#questions-and-predictions-development-version"></a></h3>
+<h3 id="questions-and-predictions-0-1-0">Questions and predictions<a class="anchor" aria-label="anchor" href="#questions-and-predictions-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/laya_question.html">laya_choice()</a></code>, <code><a href="../reference/laya_question.html">laya_score()</a></code> and <code><a href="../reference/laya_question.html">laya_noul()</a></code> build typed questions; <code><a href="../reference/laya_questions.html">laya_questions()</a></code> combines them. <code><a href="../reference/laya_preset.html">laya_preset()</a></code> gives the Python SDK’s five presets (triage, email, guard, moderation, router).</li>
 <li>
@@ -58,7 +58,7 @@
 <li>Question sets read and write the Python SDK’s JSON format (<code><a href="../reference/as_laya_questions.html">as_laya_questions()</a></code>, <code><a href="../reference/laya_questions_to_json.html">laya_questions_to_json()</a></code>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="models-development-version">Models<a class="anchor" aria-label="anchor" href="#models-development-version"></a></h3>
+<h3 id="models-0-1-0">Models<a class="anchor" aria-label="anchor" href="#models-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/laya_download_model.html">laya_download_model()</a></code> downloads ONNX exports from Hugging Face (<code>gueyenono/laya-onnx</code> by default), resumably.</li>
 <li>
@@ -67,12 +67,12 @@
 <code><a href="../reference/laya_engine.html">laya_engine()</a></code> loads a checkpoint (multilingual, English or typed-decisions); the prediction functions use <code><a href="../reference/laya_default_engine.html">laya_default_engine()</a></code>. Engines refuse to run after <code>fork()</code> instead of hanging, and reconnect after <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> or in PSOCK workers.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="text-utilities-development-version">Text utilities<a class="anchor" aria-label="anchor" href="#text-utilities-development-version"></a></h3>
+<h3 id="text-utilities-0-1-0">Text utilities<a class="anchor" aria-label="anchor" href="#text-utilities-0-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/laya_detect_language.html">laya_detect_language()</a></code>, <code><a href="../reference/laya_clean_email.html">laya_clean_email()</a></code> and <code><a href="../reference/laya_email_state.html">laya_email_state()</a></code>, ported from the Python SDK. They need no model.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="compatibility-development-version">Compatibility<a class="anchor" aria-label="anchor" href="#compatibility-development-version"></a></h3>
+<h3 id="compatibility-0-1-0">Compatibility<a class="anchor" aria-label="anchor" href="#compatibility-0-1-0"></a></h3>
 <ul><li>Results match the Python SDK on all 117 recorded cases for each of the English and multilingual checkpoints, and on all language and email probes.</li>
 <li>Errors have class <code>laya_error</code> and <code>laya_error_&lt;kind&gt;</code>.</li>
 <li>Linux and macOS. Windows is not supported yet.</li>
