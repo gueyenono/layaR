@@ -14,7 +14,14 @@ name = 'document'
 path = 'document.rs'
 
 [dependencies]
-extendr-api = '*'
+extendr-api = '0.9.0'
+# laya-onnx is not on crates.io yet (its README says it is). Pinned to the
+# commit of the reference checkout in laya-repo/ (release 0.4.34).
+# `download` is off: models are downloaded from R (plan D7).
+laya-onnx = { git = 'https://github.com/NandhaKishorM/laya', rev = '80a1da1fa5448ea12163f4d977935625a0aea670', default-features = false }
+# Match laya-onnx's own Cargo.lock (ort 2.0.0-rc.13); a caret req would pick a newer rc.
+ort = '=2.0.0-rc.13'
+serde_json = { version = '1', features = ['preserve_order', 'float_roundtrip'] }
 
 [profile.release]
 lto = true

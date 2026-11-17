@@ -97,7 +97,23 @@ if (file.exists(mv_ofp)) {
 mv_txt <- readLines(mv_fp)
 
 # replace placeholder values
+# -z noexecstack is a GNU ld option (Linux); Apple's ld rejects it. See
+# src/Makevars.in for why Linux needs it.
+.noexecstack <- if (Sys.info()[["sysname"]] == "Linux") "-Wl,-z,noexecstack" else ""
+
+# C code compiled by build scripts (onig via tokenizers) otherwise targets the
+# build machine's SDK version, newer than what R links against, and ld warns.
+# These match the minimum macOS versions of R's own macOS builds.
+.macos_env <- if (Sys.info()[["sysname"]] == "Darwin") {
+  min_ver <- if (R.version$arch %in% c("aarch64", "arm64")) "11.0" else "10.13"
+  paste0("export MACOSX_DEPLOYMENT_TARGET=", min_ver, " && ")
+} else {
+  ""
+}
+
 new_txt <- gsub("@CRAN_FLAGS@", .cran_flags, mv_txt) |>
+  gsub("@NOEXECSTACK@", .noexecstack, x = _) |>
+  gsub("@MACOS_ENV@", .macos_env, x = _) |>
   gsub("@PROFILE@", .profile, x = _) |>
   gsub("@CLEAN_TARGET@", .clean_targets, x = _) |>
   gsub("@LIBDIR@", .libdir, x = _) |>

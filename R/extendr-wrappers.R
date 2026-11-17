@@ -5,8 +5,13 @@
 #' @useDynLib layaR, .registration = TRUE
 NULL
 
-#' Return string `"Hello world!"` to R.
-#' @export
-hello_world <- function() .Call(wrap__hello_world)
+#' Load a Laya ONNX checkpoint directory.
+#' @param model_dir Path to an exported checkpoint directory.
+#' @noRd
+rs_engine_new <- function(model_dir) .Call(wrap__rs_engine_new, model_dir)
+
+#' Predict one state. Questions use the Python dict format.
+#' @noRd
+rs_predict <- function(engine, state_json, questions_json) .Call(wrap__rs_predict, engine, state_json, questions_json)
 
 # nolint end

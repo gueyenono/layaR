@@ -20,7 +20,10 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          # Windows is paused: ort has no prebuilt ONNX Runtime for
+          # x86_64-pc-windows-gnu (R's Rtools target). Re-enable once laya-onnx
+          # exposes load-dynamic (NandhaKishorM/laya#1505).
+          # - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
