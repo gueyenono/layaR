@@ -507,7 +507,9 @@ name = "laya_r"
 version = "0.1.0"
 dependencies = [
  "extendr-api",
+ "indexmap",
  "laya-onnx",
+ "log",
  "ort",
  "serde_json",
 ]
