@@ -2,7 +2,12 @@ Package: layaR
 Title: Local Laya Decision Models via Rust
 Version: 0.0.0.9000
 Authors@R: 
-    person("G. Nono", "Ghislain", , "nonoghislain@gmail.com", role = c("aut", "cre"))
+    c(person("G. Nono", "Ghislain", , "nonoghislain@gmail.com", role = c("aut", "cre")),
+      person("Convai Innovations", role = "cph",
+             comment = "laya-onnx Rust crate and the test fixtures derived from its golden tests"),
+      person("Microsoft Corporation", role = "cph", comment = "ONNX Runtime"),
+      person("Authors of the dependency Rust crates", role = "cph",
+             comment = "see LICENSE.note"))
 Description: Run Laya System 1 decision models (typed choice, score and
     yes/no questions with calibrated probabilities) locally from R,
     through the laya-onnx Rust crate and ONNX Runtime. No Python or server

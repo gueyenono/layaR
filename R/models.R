@@ -132,7 +132,7 @@ split_files <- c(
 )
 optional_split_files <- c("encoder.onnx.data", "head.onnx.data")
 
-# Where each checkpoint sits in the upstream Hugging Face repository; the
+# Where each checkpoint sits in the repository (the upstream layout); the
 # English checkpoint is at the repository root.
 hf_subfolder <- function(checkpoint) {
   switch(checkpoint, english = "", checkpoint)
@@ -140,19 +140,20 @@ hf_subfolder <- function(checkpoint) {
 
 #' Download a model
 #'
-#' Downloads an exported ONNX checkpoint (about 1.3 GB) from a Hugging Face
+#' Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging Face
 #' repository into [laya_model_path()]. Files go to a staging folder first,
 #' so an interrupted download resumes where it stopped on the next call and
 #' a partial download is never mistaken for a model.
 #'
-#' The Laya authors publish PyTorch weights, not ONNX exports, so until an
-#' ONNX export is published the download fails with a
-#' `laya_error_model_not_published` error that explains how to export one
-#' and add it with [laya_import_model()].
+#' The Laya authors publish PyTorch weights only, so layaR downloads from
+#' `gueyenono/laya-onnx`, which holds ONNX exports of the three upstream
+#' checkpoints (unchanged weights, Apache-2.0). A repository without an
+#' export gives a `laya_error_model_not_published` error that explains how
+#' to export one and add it with [laya_import_model()].
 #'
 #' @param checkpoint Which checkpoint to download.
 #' @param repo The Hugging Face repository, `"owner/name"`. Defaults to the
-#'   `layaR.model_repo` option, or the upstream `"convaiinnovations/laya"`.
+#'   `layaR.model_repo` option, or `"gueyenono/laya-onnx"`.
 #' @param revision Branch, tag or commit of the repository.
 #' @param subfolder Folder of the checkpoint inside the repository. `NULL`
 #'   uses the upstream layout (`multilingual/`, `typed-decisions/`, and the
@@ -172,7 +173,7 @@ hf_subfolder <- function(checkpoint) {
 #' }
 #' @export
 laya_download_model <- function(checkpoint = c("multilingual", "english", "typed-decisions"),
-                                repo = getOption("layaR.model_repo", "convaiinnovations/laya"),
+                                repo = getOption("layaR.model_repo", "gueyenono/laya-onnx"),
                                 revision = "main", subfolder = NULL,
                                 token = Sys.getenv("HF_TOKEN"), overwrite = FALSE,
                                 ask = interactive()) {

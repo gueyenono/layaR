@@ -33,12 +33,23 @@ remotes::install_github("gueyenono/layaR")
 
 ### Getting a model
 
-layaR needs an exported ONNX checkpoint (about 1.3 GB per checkpoint).
-`laya_download_model()` fetches one from Hugging Face once it is
-published there. The Laya authors haven’t published ONNX files yet
-([NandhaKishorM/laya#1504](https://github.com/NandhaKishorM/laya/issues/1504)),
-so for now export one once with Python, using the script from the Laya
-repository, and import it:
+layaR needs an ONNX export of a Laya checkpoint (1.3 to 1.6 GB each).
+`laya_download_model()` fetches one from
+[`gueyenono/laya-onnx`](https://huggingface.co/gueyenono/laya-onnx),
+which holds ONNX exports of the three upstream checkpoints (unchanged
+weights, Apache-2.0):
+
+``` r
+laya_download_model("multilingual")   # also "english" and "typed-decisions"
+laya_models()   # (paths shortened)
+#>        checkpoint installed                                  path source layout size_gb
+#> 1    multilingual      TRUE    ~/.cache/R/layaR/onnx/multilingual  layaR  fused    1.32
+#> 2         english     FALSE         ~/.cache/R/layaR/onnx/english   <NA>   <NA>      NA
+#> 3 typed-decisions     FALSE ~/.cache/R/layaR/onnx/typed-decisions   <NA>   <NA>      NA
+```
+
+To use an export you made yourself with the script from the Laya
+repository, import it instead:
 
 ``` sh
 pip install laya "torch>=2.9" onnx onnxscript onnxruntime transformers safetensors huggingface_hub
@@ -47,11 +58,6 @@ python laya-rust/tools/export_onnx.py --model multilingual --out ~/laya-exports
 
 ``` r
 laya_import_model("~/laya-exports/multilingual", "multilingual")
-laya_models()   # (paths shortened)
-#>       checkpoint installed                          path source layout size_gb
-#> 1   multilingual      TRUE ~/.cache/R/layaR/onnx/multilingual  layaR  fused    1.24
-#> 2        english     FALSE      ~/.cache/R/layaR/onnx/english   <NA>   <NA>      NA
-#> 3 typed-decisions    FALSE ~/.cache/R/layaR/onnx/typed-decisions <NA> <NA>      NA
 ```
 
 `laya_model_root()` explains where models live. A model exported for

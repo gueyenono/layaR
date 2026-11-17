@@ -499,7 +499,7 @@ tickets |>
 laya_model_root()                  # option layaR.model_root > env LAYA_ONNX_ROOT > R_user_dir(cache)/onnx
 laya_model_path("multilingual")
 laya_models()                      # data.frame: checkpoint, path, installed, layout, size_gb
-laya_download_model("multilingual", repo = "convaiinnovations/laya", token = Sys.getenv("HF_TOKEN"))
+laya_download_model("multilingual", repo = "gueyenono/laya-onnx", token = Sys.getenv("HF_TOKEN"))
 laya_import_model("~/exports/onnx/multilingual", checkpoint = "multilingual", method = c("symlink", "copy"))
 laya_export_model(...)             # optional, Phase 5: drives export_onnx.py via reticulate
 ```
@@ -799,8 +799,18 @@ operating systems in CI.
   Python's `sender` argument name), through new bridge functions. They match Python on all 261
   language probes and all 275 email probes from laya-rust's routing golden, which are now
   fixtures.
-- Not done yet: re-hosting the exports (needs a Hugging Face account and the user's go-ahead),
-  and the optional `laya_export_model()`.
+- Re-hosting done (2026-11-16): all three exports are on `gueyenono/laya-onnx` (public,
+  upstream layout), which is now `laya_download_model()`'s default. The repo ships the Apache-2.0
+  text, an unofficial-redistribution notice, the list of changes, the mmBERT MIT notice
+  (`THIRD_PARTY_NOTICES.md`) and the Laya, ModernBERT and mmBERT citations. Every file was
+  checked by SHA-256, and parity passes on the downloaded models.
+- typed-decisions: upstream's `export_onnx.py --verify` shape sweep compares against the first
+  architecture-compatible `model.safetensors` in the HF cache (the English root weights), so it
+  reported a false 0.28 logit gap. Against the right weights the gap is 3.3e-7.
+- Licensing of layaR itself: `LICENSE.note` (from `rextendr::write_license_note()`, plus ONNX
+  Runtime) lists the 162 crates linked into the binary, all permissive. DESCRIPTION lists
+  Convai Innovations, Microsoft and the crate authors as `cph`. The fixtures credit upstream.
+- Not done: the optional `laya_export_model()`.
 
 ### Phase 6 — Documentation, performance and release 0.1.0 (3–5 days)
 

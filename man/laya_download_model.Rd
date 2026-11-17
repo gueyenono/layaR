@@ -6,7 +6,7 @@
 \usage{
 laya_download_model(
   checkpoint = c("multilingual", "english", "typed-decisions"),
-  repo = getOption("layaR.model_repo", "convaiinnovations/laya"),
+  repo = getOption("layaR.model_repo", "gueyenono/laya-onnx"),
   revision = "main",
   subfolder = NULL,
   token = Sys.getenv("HF_TOKEN"),
@@ -18,7 +18,7 @@ laya_download_model(
 \item{checkpoint}{Which checkpoint to download.}
 
 \item{repo}{The Hugging Face repository, \code{"owner/name"}. Defaults to the
-\code{layaR.model_repo} option, or the upstream \code{"convaiinnovations/laya"}.}
+\code{layaR.model_repo} option, or \code{"gueyenono/laya-onnx"}.}
 
 \item{revision}{Branch, tag or commit of the repository.}
 
@@ -40,16 +40,17 @@ interactive sessions.}
 The model's path, invisibly.
 }
 \description{
-Downloads an exported ONNX checkpoint (about 1.3 GB) from a Hugging Face
+Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging Face
 repository into \code{\link[=laya_model_path]{laya_model_path()}}. Files go to a staging folder first,
 so an interrupted download resumes where it stopped on the next call and
 a partial download is never mistaken for a model.
 }
 \details{
-The Laya authors publish PyTorch weights, not ONNX exports, so until an
-ONNX export is published the download fails with a
-\code{laya_error_model_not_published} error that explains how to export one
-and add it with \code{\link[=laya_import_model]{laya_import_model()}}.
+The Laya authors publish PyTorch weights only, so layaR downloads from
+\code{gueyenono/laya-onnx}, which holds ONNX exports of the three upstream
+checkpoints (unchanged weights, Apache-2.0). A repository without an
+export gives a \code{laya_error_model_not_published} error that explains how
+to export one and add it with \code{\link[=laya_import_model]{laya_import_model()}}.
 }
 \examples{
 \dontrun{
