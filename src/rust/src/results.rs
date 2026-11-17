@@ -9,7 +9,7 @@
 //! - `usage` has `input_tokens` and `output_tokens`, plus, when the engine reports per-state
 //!   diagnostics, `state_tokens`, `state_tokens_dropped`, `truncated` and `truncated_questions`;
 //!   `options` only when some question's options collapsed; `windows` for a scan, where
-//!   `truncated` is the count of truncated windows instead of a bool.
+//!   `truncated` is the count of truncated windows instead of a bool (when more than one window ran).
 
 use laya::{Answer, LayaResult};
 use serde_json::{Map, Value, json};
@@ -92,8 +92,12 @@ pub fn encode_result(result: &LayaResult) -> Value {
         u.insert("state_tokens".into(), json!(s.state_tokens));
         u.insert("state_tokens_dropped".into(), json!(s.state_tokens_dropped));
         match scan {
-            Some(scan) => u.insert("truncated".into(), json!(scan.truncated_windows)),
-            None => u.insert("truncated".into(), json!(s.truncated)),
+            // Python reports a count only when it actually slid windows; the one-pass fast path
+            // (windows == 1) keeps the ordinary boolean.
+            Some(scan) if scan.windows > 1 => {
+                u.insert("truncated".into(), json!(scan.truncated_windows))
+            }
+            _ => u.insert("truncated".into(), json!(s.truncated)),
         };
         u.insert("truncated_questions".into(), json!(s.truncated_questions));
         if !s.options.is_empty() {

@@ -7,19 +7,33 @@ args <- commandArgs(trailingOnly = TRUE)
 checkpoint <- if (length(args)) args[[1]] else "multilingual"
 dir <- file.path(tools::R_user_dir("layaR", "cache"), "onnx", checkpoint)
 files <- Sys.glob(file.path("laya-repo/laya-rust/tests/golden", checkpoint, "case_*.json"))
-engines <- list()
+table_key <- vapply(files, function(f) {
+  lt <- jsonlite::fromJSON(f, simplifyVector = FALSE)$lang_temperatures
+  if (is.null(lt)) "" else as.character(jsonlite::toJSON(lt, auto_unbox = TRUE, digits = NA))
+}, character(1))
+files <- files[order(table_key != "", table_key)]
+# Keep one engine at a time (each holds ~1 GB): cases are sorted by their
+# lang_temperatures table so the engine is rebuilt only when the table changes.
+current <- list(key = NULL, engine = NULL)
 engine_for <- function(lt) {
   key <- if (is.null(lt)) "" else as.character(to_json(lt))
-  if (is.null(engines[[key]])) {
+  if (!identical(key, current$key)) {
+    if (!is.null(current$engine)) rs_engine_close(current$engine)
+    current <<- list(key = key, engine = NULL)
     opts <- if (is.null(lt)) "{}" else as.character(to_json(list(lang_temperatures = lt)))
     res <- rs_engine_new(dir, opts)
     if (!res$ok) return(res)
-    engines[[key]] <<- res$value
+    current$engine <<- res$value
+    gc()
   }
-  engines[[key]]
+  current$engine
 }
 diffs <- character()
 cmp <- function(want, got, path) {
+  # Python's batch path names the model "laya-rl-agent-onnx"; laya-onnx reports
+  # "laya-rl-agent" everywhere (upstream's own parity tests don't compare it for
+  # batches either).
+  if (grepl("\\$model$", path)) return(invisible())
   if (is.list(want) && !is.null(names(want))) {
     if (!identical(names(want), names(got)))
       diffs <<- c(diffs, sprintf("%s: keys want [%s] got [%s]", path,
@@ -51,7 +65,7 @@ for (f in files) {
   } else if (!is.null(d$windows)) {
     res <- rs_predict_long(eng, as.character(to_json(d$state)), q, opts); want <- d$result
   } else if (!is.null(d$states) || !is.null(d$results)) {
-    states <- as.character(jsonlite::toJSON(d$states, auto_unbox = TRUE, digits = NA, null = "null"))
+    states <- as.character(to_json(d$states, array = TRUE))
     res <- rs_predict_batch(eng, states, q, opts); want <- d$results
   } else {
     res <- rs_predict(eng, as.character(to_json(d$state)), q, opts); want <- d$result
@@ -76,4 +90,4 @@ for (f in files) {
 }
 cat(sprintf("%s: %d cases in %.0f s\n", checkpoint, length(files), as.numeric(Sys.time() - t0, units = "secs")))
 print(tally)
-cat(head(unique(diffs), 60), sep = "\n")
+cat(unique(diffs), sep = "\n")
