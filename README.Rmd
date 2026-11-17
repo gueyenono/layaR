@@ -29,8 +29,22 @@ and no server are needed at prediction time.
 
 ## Installation
 
-layaR builds from source and needs a Rust toolchain (rustc 1.85 or newer)
-and, on Linux, OpenSSL headers (`libssl-dev` / `openssl-devel`).
+**Platforms.** layaR runs on Linux (x86_64 and arm64) and on Macs with
+Apple silicon. Windows and Intel Macs are not supported yet: the ONNX
+Runtime library layaR builds against has no prebuilt version for them.
+Windows support is planned.
+
+Install from r-universe. On a Mac it gives you a ready-made binary; on
+Linux it builds from source (see below):
+
+```{r}
+install.packages("layaR", repos = c("https://gueyenono.r-universe.dev",
+                                    "https://cloud.r-project.org"))
+```
+
+Building from source, on Linux or with `install_github()`, needs a Rust
+toolchain (rustc 1.85 or newer) and, on Linux, OpenSSL headers
+(`libssl-dev` / `openssl-devel`).
 
 ```{r}
 # install.packages("remotes")
