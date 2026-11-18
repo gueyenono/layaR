@@ -1,3 +1,5 @@
+# layaR (development version)
+
 # layaR 0.1.1
 
 * `laya_annotate()` gains `answer_confidence`, which adds an
