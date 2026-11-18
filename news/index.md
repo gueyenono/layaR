@@ -1,5 +1,7 @@
 # Changelog
 
+## layaR (development version)
+
 ## layaR 0.1.1
 
 - [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)
