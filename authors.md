@@ -17,7 +17,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/gueyenono/layaR/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/gueyenono/layaR/blob/v0.1.1/DESCRIPTION)
 
 Ghislain G (2026). *layaR: Local Laya Decision Models via Rust*. R
 package version 0.1.1, <https://gueyenono.github.io/layaR/>.
