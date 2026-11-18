@@ -1,4 +1,4 @@
-# layaR (development version)
+# layaR 0.1.1
 
 * `laya_annotate()` gains `answer_confidence`, which adds an
   `<id>_answer_confidence` column: the confidence in the answer given (for a
@@ -9,6 +9,9 @@
   "object not found".
 * New website article, "Using layaR with the tidyverse", showing the
   data-frame workflows with dplyr, tidyr, purrr and ggplot2.
+* The README lists the supported platforms (Linux, and macOS on Apple
+  silicon; Windows and Intel Macs are not supported yet) and how to install
+  from r-universe.
 
 # layaR 0.1.0
 
