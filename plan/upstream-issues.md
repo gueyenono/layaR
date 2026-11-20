@@ -10,6 +10,7 @@ prefix `[feature]: `, label `enhancement`). Before drafting, I searched existing
 ## Issue U1 — Publish the ONNX exports on Hugging Face
 
 **Posted 2026-11-16 as https://github.com/NandhaKishorM/laya/issues/1504** (without the `enhancement` label; only maintainers can set labels).
+*2026-11-20: chetanxrathore offered to fix the `--verify` cache lookup (Python + .NET exporters) and open an HF PR on `convaiinnovations/laya` with §8-layout fused files. Replied welcoming it (maintainers' call), asked for fixed-verifier exports, verify numbers in the PR and a pinned revision; promised to switch layaR's default and retire the mirror once official files are live.*
 
 **Title:** `[feature]: publish the ONNX exports of the three checkpoints on Hugging Face`
 
