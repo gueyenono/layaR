@@ -9,6 +9,7 @@ mod logging;
 mod options;
 mod questions;
 mod results;
+mod runtime;
 mod text;
 
 use envelope::{BResult, BridgeError, envelope};
@@ -18,7 +19,7 @@ use serde_json::{Value, json};
 use std::sync::{Arc, Mutex};
 
 /// laya-onnx's git revision; keep in sync with `Cargo.toml`.
-const LAYA_ONNX_REV: &str = "80a1da1fa5448ea12163f4d977935625a0aea670";
+const LAYA_ONNX_REV: &str = "1bf3003bf8a105b1a0aae585958ac7022bc3deb5";
 const LAYA_ONNX_VERSION: &str = "0.1.0";
 const ORT_VERSION: &str = "2.0.0-rc.13";
 
@@ -301,6 +302,7 @@ fn rs_versions() -> Robj {
 
 extendr_module! {
     mod laya_r;
+    use runtime;
     fn rs_engine_new;
     fn rs_engine_info;
     fn rs_engine_close;
