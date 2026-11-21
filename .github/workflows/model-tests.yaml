@@ -1,0 +1,112 @@
+# Runs the model-backed tests (predictions and parity with the Python SDK),
+# which R-CMD-check.yaml skips because it has no model. Started by hand from
+# the Actions tab (or `gh workflow run model-tests.yaml -f os=windows-latest`).
+# It also runs on pull requests that change this file, with the defaults.
+#
+# Each model is 1.3 to 1.6 GB; they and ONNX Runtime are cached per OS.
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Runner
+        type: choice
+        default: windows-latest
+        options: [windows-latest, macos-latest, ubuntu-latest, all]
+      checkpoint:
+        description: Checkpoint
+        type: choice
+        default: multilingual
+        options: [multilingual, english, typed-decisions, all]
+      parity:
+        description: Parity cases (core is ~2 min per checkpoint, all ~6 min)
+        type: choice
+        default: core
+        options: [core, all]
+  pull_request:
+    paths: ['.github/workflows/model-tests.yaml']
+
+name: model-tests.yaml
+
+permissions: read-all
+
+jobs:
+  model-tests:
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} (${{ matrix.checkpoint }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON((inputs.os || 'windows-latest') == 'all' && '["windows-latest","macos-latest","ubuntu-latest"]' || format('["{0}"]', inputs.os || 'windows-latest')) }}
+        checkpoint: ${{ fromJSON((inputs.checkpoint || 'multilingual') == 'all' && '["multilingual","english","typed-decisions"]' || format('["{0}"]', inputs.checkpoint || 'multilingual')) }}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      NOT_CRAN: true
+      # A runtime that fails to load fails the tests instead of skipping them.
+      LAYAR_TEST_RUNTIME: true
+      LAYAR_PARITY: ${{ inputs.parity || 'core' }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      # R on Windows builds with the GNU toolchain (Rtools).
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'Windows' && 'x86_64-pc-windows-gnu' || '' }}
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: local::.
+          needs: check
+
+      # R_user_dir() outside the checkout, so models and runtime can be cached.
+      # (The runner context isn't available in job-level env.)
+      - name: Set R user dirs
+        shell: bash
+        run: |
+          echo "R_USER_DATA_DIR=${{ runner.temp }}/r-user-data" >> "$GITHUB_ENV"
+          echo "R_USER_CACHE_DIR=${{ runner.temp }}/r-user-cache" >> "$GITHUB_ENV"
+
+      - name: Cache ONNX Runtime
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/r-user-data/R/layaR/onnxruntime
+          key: onnxruntime-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('R/runtime.R') }}
+
+      # Bump the trailing number to download the models again.
+      - name: Cache model
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/r-user-cache/R/layaR/onnx/${{ matrix.checkpoint }}
+          key: model-${{ matrix.checkpoint }}-${{ runner.os }}-1
+
+      - name: Download model and ONNX Runtime
+        shell: Rscript {0}
+        run: |
+          layaR::laya_download_model("${{ matrix.checkpoint }}", ask = FALSE)
+          layaR::laya_install_runtime(ask = FALSE)
+          str(layaR::laya_runtime_info())
+          print(layaR::laya_models())
+
+      - name: Smoke test
+        shell: Rscript {0}
+        run: |
+          library(layaR)
+          eng <- laya_engine("${{ matrix.checkpoint }}")
+          str(laya_runtime_info()[c("loaded_path", "loaded_version")])
+          print(laya_predict(list(message = "My payment failed twice"),
+                             laya_preset("triage"), engine = eng))
+
+      # The installed package's tests, with the internals in scope as under
+      # R CMD check.
+      - name: Run tests
+        shell: Rscript {0}
+        run: |
+          testthat::test_dir("tests/testthat", package = "layaR",
+                             load_package = "installed", stop_on_failure = TRUE)
