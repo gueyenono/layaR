@@ -82,6 +82,7 @@ laya_engine <- function(checkpoint = c("multilingual", "english", "typed-decisio
 }
 
 connect <- function(engine, call = parent.frame()) {
+  ensure_runtime(call = call)
   engine$ptr <- rs_unwrap(rs_engine_new(engine$model_dir, engine$options_json), call = call)
   engine$pid <- Sys.getpid()
   engine$info <- from_json(rs_unwrap(rs_engine_info(engine$ptr), call = call))

@@ -609,6 +609,15 @@ needed for r-universe too.
 
 ### 9.4 The Windows and CRAN problem, and the fix
 
+> **Resolved 2026-11-21.** Upstream adopted U2 (laya#1505, PR #1508, merge commit `1bf3003`).
+> layaR builds `laya-onnx` with `default-features = false, features = ["load-dynamic"]` and
+> `ort` with default features off. `R/runtime.R` downloads ONNX Runtime 1.28.0 from Microsoft's
+> NuGet package `Microsoft.ML.OnnxRuntime` (the GitHub releases of `microsoft/onnxruntime` were
+> unreachable), checks the published SHA-512 and extracts this platform's library into
+> `tools::R_user_dir("layaR", "data")`; `src/rust/src/runtime.rs` loads it with
+> `ort::init_from()` before the first engine. NuGet has no Intel Mac library, so Intel Macs need a
+> user-supplied ONNX Runtime >= 1.27. The OpenSSL build requirement and `-z noexecstack` are gone.
+
 - **Windows.** R builds packages with the GNU toolchain (Rtools, target `x86_64-pc-windows-gnu`).
   `ort`'s prebuilt ONNX Runtime binaries target MSVC, so expect `download-binaries` to fail or
   mis-link there. **Test this first in Phase 0.**
@@ -902,7 +911,7 @@ must not block on any of them. Every ask has a workaround on our side.
 | # | Ask | Impact on layaR |
 |---|---|---|
 | U1 | Publish the ONNX exports on Hugging Face (already planned in `MODELS.md` §6). | Removes the Python and torch export step, the biggest UX hurdle. |
-| U2 | Pass `ort`'s features through: a `load-dynamic` feature, with `download-binaries` in `default`. | Unblocks Windows GNU and CRAN (section 9.4). |
+| U2 | Pass `ort`'s features through: a `load-dynamic` feature, with `download-binaries` in `default`. | Unblocks Windows GNU and CRAN (section 9.4). **Done** in laya PR #1508 (2026-11-21), adopted by layaR. |
 | U3 | An optional `serde` feature: `Serialize` on `LayaResult` and `Answer`, `Deserialize` for `QuestionSet` from the Python dict format. | Removes most of `questions.rs` and `results.rs`. Upstream also owns the format, so drift is impossible. |
 | U4 | Port noul `labels`, prediction hooks and histogram calibration. | Feature parity with Python. |
 | U5 | Expose token counting (`LayaEngine::tokenizer()` or a `count_tokens`). | Enables an R helper that budgets state length before prediction. |
@@ -914,7 +923,7 @@ must not block on any of them. Every ask has a workaround on our side.
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | ONNX exports never published on Hugging Face | Medium | High (setup needs Python) | `laya_import_model()` plus an optional reticulate export helper; re-host exports yourself **after checking the checkpoints' licenses on their Hugging Face model cards**. |
-| `ort` prebuilt binaries fail on Windows GNU | High | High (no Windows) | Test in Phase 0; U2 or a patched fork with `load-dynamic`; ship Linux and macOS first. |
+| `ort` prebuilt binaries fail on Windows GNU | Resolved | — | U2 adopted upstream; layaR uses `load-dynamic` and downloads ONNX Runtime at run time (9.4). |
 | `laya-onnx` 0.1.0 changes API or behavior | Medium | Medium | Exact pin plus `Cargo.lock`; parity suite gates upgrades; the thin bridge keeps upgrades cheap. |
 | `ort` is still a 2.0 release candidate | Medium | Medium | Exact pin through `Cargo.lock`; upgrade only alongside `laya-onnx`. |
 | Memory (about 1.3–1.6 GB per engine) surprises users | High | Medium | Document it; one cached default engine; `laya_engine_close()`; warn when a second checkpoint loads. |
@@ -935,4 +944,4 @@ must not block on any of them. Every ask has a workaround on our side.
 | 4 | Distribution | **r-universe first**; CRAN later | Phases 0–6 target r-universe. Phase 7 (CRAN) waits until `load-dynamic` is available. |
 | 5 | Upstream | **Issues only**, no PRs | Section 11 asks go in as issues. If U2 isn't adopted, the fallback is a patched fork through `[patch.crates-io]`, or a vendored copy (section 9.4). layaR keeps its own translation code (U3 is a nice-to-have). |
 | 6 | Dev location | **The current folder** (`/home/gueyenono/Drives/My_Drive/projects/r_packages/layaR`). It's a local disk, not a synced Google Drive folder. | The package is created in place. `laya-repo/` stays alongside as the reference checkout, ignored by git and by `R CMD build`. See 9.1 and Phase 1. |
-| 7 | Windows (2026-11-16) | **Linux and macOS first.** No fork for now. | Windows is commented out of the CI matrix. U2 is posted as NandhaKishorM/laya#1505. Windows support resumes when upstream exposes `load-dynamic`, or if we decide to fork later. |
+| 7 | Windows (2026-11-16) | **Linux and macOS first.** No fork for now. | Windows is commented out of the CI matrix. U2 is posted as NandhaKishorM/laya#1505. Windows support resumes when upstream exposes `load-dynamic`, or if we decide to fork later. **2026-11-21:** upstream shipped it (PR #1508); Windows is back in CI. |

@@ -141,7 +141,8 @@ hf_subfolder <- function(checkpoint) {
 #' Download a model
 #'
 #' Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging Face
-#' repository into [laya_model_path()]. Files go to a staging folder first,
+#' repository into [laya_model_path()]. The first download also installs
+#' ONNX Runtime (see [laya_install_runtime()]). Files go to a staging folder first,
 #' so an interrupted download resumes where it stopped on the next call and
 #' a partial download is never mistaken for a model.
 #'
@@ -207,8 +208,11 @@ laya_download_model <- function(checkpoint = c("multilingual", "english", "typed
   }
 
   if (isTRUE(ask)) {
-    ok <- utils::askYesNo(sprintf("Download the %s model (about 1.3 GB) from %s to %s?",
-                                  checkpoint, repo, dest))
+    extra <- if (needs_runtime()) {
+      sprintf(", plus ONNX Runtime (%d MB) on first use", ort_nupkg_size_mb)
+    } else ""
+    ok <- utils::askYesNo(sprintf("Download the %s model (about 1.3 GB) from %s to %s%s?",
+                                  checkpoint, repo, dest, extra))
     if (!isTRUE(ok)) {
       cli::cli_inform("Download cancelled.")
       return(invisible(NULL))
@@ -242,7 +246,13 @@ laya_download_model <- function(checkpoint = c("multilingual", "english", "typed
                kind = "io")
   }
   cli::cli_inform(c(v = "Installed the {.val {checkpoint}} model at {.path {dest}}."))
+  if (needs_runtime()) laya_install_runtime(ask = FALSE)
   invisible(dest)
+}
+
+# TRUE when no ONNX Runtime is available but layaR can download one.
+needs_runtime <- function() {
+  is.null(runtime_resolve()) && !is.null(ort_platform())
 }
 
 remote_exists <- function(url, headers = NULL) {
@@ -266,8 +276,10 @@ set_names_x <- function(x) {
 #' @param path The export's folder: it holds `model.onnx` (or `encoder.onnx`
 #'   and `head.onnx`), `rl_agent_config.json` and the tokenizer.
 #' @param checkpoint Which checkpoint the export is.
-#' @param method `"symlink"` (the default) links to the folder without
-#'   copying 1.3 GB; `"copy"` copies it, so the original can be deleted.
+#' @param method `"symlink"` links to the folder without copying 1.3 GB;
+#'   `"copy"` copies it, so the original can be deleted. The default is
+#'   `"symlink"`, except on Windows, where links to folders need special
+#'   permissions and only `"copy"` is supported.
 #' @param overwrite Replace an installed model?
 #' @return The installed path, invisibly.
 #' @examples
@@ -276,9 +288,14 @@ set_names_x <- function(x) {
 #' }
 #' @export
 laya_import_model <- function(path, checkpoint = c("multilingual", "english", "typed-decisions"),
-                              method = c("symlink", "copy"), overwrite = FALSE) {
+                              method = default_import_method(), overwrite = FALSE) {
   checkpoint <- match.arg(checkpoint)
-  method <- match.arg(method)
+  method <- match.arg(method, c("symlink", "copy"))
+  if (method == "symlink" && is_windows()) {
+    laya_abort(c("On Windows, models can only be imported with {.code method = \"copy\"}.",
+                 i = "Links to folders need Developer Mode or administrator rights there."),
+               kind = "invalid_argument")
+  }
   if (!is.character(path) || length(path) != 1 || is.na(path)) {
     laya_abort("{.arg path} must be a single folder path.", kind = "invalid_argument")
   }
@@ -348,6 +365,10 @@ laya_remove_model <- function(checkpoint = c("multilingual", "english", "typed-d
   cli::cli_inform(c(v = "Removed the {.val {checkpoint}} model."))
   invisible(TRUE)
 }
+
+default_import_method <- function() if (is_windows()) "copy" else "symlink"
+
+is_windows <- function() .Platform$OS.type == "windows"
 
 # Sys.readlink() gives "" for a regular file and NA for a missing path.
 is_symlink <- function(path) {

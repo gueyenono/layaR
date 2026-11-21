@@ -20,10 +20,7 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          # Windows is paused: ort has no prebuilt ONNX Runtime for
-          # x86_64-pc-windows-gnu (R's Rtools target). Re-enable once laya-onnx
-          # exposes load-dynamic (NandhaKishorM/laya#1505).
-          # - {os: windows-latest, r: 'release'}
+          - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
@@ -31,6 +28,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # The tests download ONNX Runtime (once per OS, then cached below) and
+      # check that it loads. No model is downloaded, so model tests skip.
+      LAYAR_TEST_RUNTIME: true
 
     steps:
       - uses: actions/checkout@v6
@@ -52,6 +52,19 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
+
+      # R_user_dir("layaR", "data") outside the checkout, so it can be cached.
+      # (The runner context isn't available in job-level env.)
+      - name: Set R user data dir
+        shell: bash
+        run: echo "R_USER_DATA_DIR=${{ runner.temp }}/r-user-data" >> "$GITHUB_ENV"
+
+      # Key on the ONNX Runtime version in R/runtime.R.
+      - name: Cache ONNX Runtime
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/r-user-data/R/layaR/onnxruntime
+          key: onnxruntime-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('R/runtime.R') }}
 
       - uses: r-lib/actions/check-r-package@v2
         with:

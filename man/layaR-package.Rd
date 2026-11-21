@@ -23,6 +23,8 @@ and \code{\link[=laya_annotate]{laya_annotate()}} (1).
 \code{\link[=laya_model_root]{laya_model_root()}}).
 \item \code{layaR.model_repo}: the Hugging Face repository
 \code{\link[=laya_download_model]{laya_download_model()}} uses (\code{"gueyenono/laya-onnx"}).
+\item \code{layaR.onnxruntime}: the path of an ONNX Runtime library to load instead
+of the one \code{\link[=laya_install_runtime]{laya_install_runtime()}} downloads.
 \item \code{layaR.shared_cache}: \code{FALSE} stops layaR from looking for models in the
 cache shared with Laya's Rust and TypeScript SDKs.
 }
@@ -48,7 +50,6 @@ Authors:
 Other contributors:
 \itemize{
   \item Convai Innovations (laya-onnx Rust crate and the test fixtures derived from its golden tests) [copyright holder]
-  \item Microsoft Corporation (ONNX Runtime) [copyright holder]
   \item Authors of the dependency Rust crates (see LICENSE.note) [copyright holder]
 }
 

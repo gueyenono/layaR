@@ -29,13 +29,16 @@ test_that("a missing model gives a helpful classed error", {
 test_that("model root follows the option, then LAYA_ONNX_ROOT", {
   withr::local_options(layaR.model_root = NULL)
   withr::local_envvar(LAYA_ONNX_ROOT = "/opt/laya-models")
-  expect_identical(laya_model_path("english"), file.path("/opt/laya-models", "english"))
+  # normalizePath() adds a drive letter on Windows.
+  expect_identical(laya_model_path("english"),
+                   file.path(normalizePath("/opt/laya-models", mustWork = FALSE), "english"))
   withr::local_options(layaR.model_root = "/srv/models")
-  expect_identical(laya_model_root(), "/srv/models")
+  expect_identical(laya_model_root(), normalizePath("/srv/models", mustWork = FALSE))
 })
 
 skip_if_no_model <- function() {
   skip_if_not(laya_model_available("multilingual"), "no local multilingual model")
+  skip_without_runtime()
 }
 
 test_that("laya_predict answers every question", {

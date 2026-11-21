@@ -78,6 +78,7 @@ model_dir <- function() {
 
 skip_without_model <- function() {
   skip_if_not(rs_artifacts_complete(model_dir()), "no local multilingual model")
+  skip_without_runtime()
 }
 
 local_engine <- local({

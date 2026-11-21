@@ -66,6 +66,7 @@ run_parity_case <- function(case, engine) {
 check_parity <- function(checkpoint) {
   skip_on_cran()
   skip_if_not(laya_model_available(checkpoint), paste("no local", checkpoint, "model"))
+  skip_without_runtime()
   fixture <- jsonlite::fromJSON(test_path("fixtures", "parity", paste0(checkpoint, ".json")),
                                 simplifyVector = FALSE)
   cases <- fixture$cases

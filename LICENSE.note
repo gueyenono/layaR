@@ -31,23 +31,16 @@ License:     MIT/Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        base64
-Repository:  https://github.com/marshallpierce/rust-base64
-Authors:     Marshall Pierce
+Name:        bitflags
+Repository:  https://github.com/bitflags/bitflags
+Authors:     The Rust Project Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        base64ct
-Repository:  https://github.com/RustCrypto/formats
+Name:        block-buffer
+Repository:  https://github.com/RustCrypto/utils
 Authors:     RustCrypto Developers
-License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
-Name:        bitflags
-Repository:  https://github.com/bitflags/bitflags
-Authors:     The Rust Project Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -56,13 +49,6 @@ Name:        bumpalo
 Repository:  https://github.com/fitzgen/bumpalo
 Authors:     Nick Fitzgerald
 License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        bytes
-Repository:  https://github.com/tokio-rs/bytes
-Authors:     Carl Lerche, Sean McArthur
-License:     MIT
 
 -------------------------------------------------------------
 
@@ -101,16 +87,9 @@ License:     MIT
 
 -------------------------------------------------------------
 
-Name:        core-foundation
-Repository:  https://github.com/servo/core-foundation-rs
-Authors:     The Servo Project Developers
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        core-foundation-sys
-Repository:  https://github.com/servo/core-foundation-rs
-Authors:     The Servo Project Developers
+Name:        cpufeatures
+Repository:  https://github.com/RustCrypto/utils
+Authors:     RustCrypto Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -132,6 +111,13 @@ License:     MIT OR Apache-2.0
 Name:        crossbeam-utils
 Repository:  https://github.com/crossbeam-rs/crossbeam
 Authors:     
+License:     MIT OR Apache-2.0
+
+-------------------------------------------------------------
+
+Name:        crypto-common
+Repository:  https://github.com/RustCrypto/traits
+Authors:     RustCrypto Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -171,13 +157,6 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        der
-Repository:  https://github.com/RustCrypto/formats
-Authors:     RustCrypto Developers
-License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
 Name:        derive_builder
 Repository:  https://github.com/colin-kiegel/rust-derive-builder
 Authors:     Colin Kiegel, Pascal Hertleif, Jan-Erik Rediger, Ted Driggs
@@ -195,6 +174,13 @@ License:     MIT OR Apache-2.0
 Name:        derive_builder_macro
 Repository:  https://github.com/colin-kiegel/rust-derive-builder
 Authors:     Colin Kiegel, Pascal Hertleif, Jan-Erik Rediger, Ted Driggs
+License:     MIT OR Apache-2.0
+
+-------------------------------------------------------------
+
+Name:        digest
+Repository:  https://github.com/RustCrypto/traits
+Authors:     RustCrypto Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -217,13 +203,6 @@ Name:        equivalent
 Repository:  https://github.com/indexmap-rs/equivalent
 Authors:     
 License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
-Name:        errno
-Repository:  https://github.com/lambda-fairy/rust-errno
-Authors:     Chris Wong, Dan Gohman
-License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
@@ -255,13 +234,6 @@ License:     MIT
 
 -------------------------------------------------------------
 
-Name:        fastrand
-Repository:  https://github.com/smol-rs/fastrand
-Authors:     Stjepan Glavina
-License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
 Name:        find-msvc-tools
 Repository:  https://github.com/rust-lang/cc-rs
 Authors:     
@@ -280,20 +252,6 @@ Name:        foldhash
 Repository:  https://github.com/orlp/foldhash
 Authors:     Orson Peters
 License:     Zlib
-
--------------------------------------------------------------
-
-Name:        foreign-types
-Repository:  https://github.com/sfackler/foreign-types
-Authors:     Steven Fackler
-License:     MIT/Apache-2.0
-
--------------------------------------------------------------
-
-Name:        foreign-types-shared
-Repository:  https://github.com/sfackler/foreign-types
-Authors:     Steven Fackler
-License:     MIT/Apache-2.0
 
 -------------------------------------------------------------
 
@@ -318,10 +276,10 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        getrandom
-Repository:  https://github.com/rust-random/getrandom
-Authors:     The Rand Project Developers
-License:     MIT OR Apache-2.0
+Name:        generic-array
+Repository:  https://github.com/fizyk20/generic-array.git
+Authors:     Bartłomiej Kamiński, Aaron Trent
+License:     MIT
 
 -------------------------------------------------------------
 
@@ -335,27 +293,6 @@ License:     MIT OR Apache-2.0
 Name:        hashbrown
 Repository:  https://github.com/rust-lang/hashbrown
 Authors:     
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        hmac-sha256
-Repository:  https://github.com/jedisct1/rust-hmac-sha256
-Authors:     Frank Denis
-License:     ISC
-
--------------------------------------------------------------
-
-Name:        http
-Repository:  https://github.com/hyperium/http
-Authors:     Alex Crichton, Carl Lerche, Sean McArthur
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        httparse
-Repository:  https://github.com/seanmonstar/httparse
-Authors:     Sean McArthur
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -423,10 +360,10 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        linux-raw-sys
-Repository:  https://github.com/sunfishcode/linux-raw-sys
-Authors:     Dan Gohman
-License:     Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+Name:        libloading
+Repository:  https://github.com/nagisa/rust_libloading/
+Authors:     Simonas Kazlauskas
+License:     ISC
 
 -------------------------------------------------------------
 
@@ -434,13 +371,6 @@ Name:        log
 Repository:  https://github.com/rust-lang/log
 Authors:     The Rust Project Developers
 License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        lzma-rust2
-Repository:  https://github.com/hasenbanck/lzma-rust2/
-Authors:     
-License:     Apache-2.0
 
 -------------------------------------------------------------
 
@@ -489,13 +419,6 @@ License:     MIT OR Apache-2.0
 Name:        monostate-impl
 Repository:  https://github.com/dtolnay/monostate
 Authors:     David Tolnay
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        native-tls
-Repository:  https://github.com/rust-native-tls/rust-native-tls
-Authors:     Steven Fackler
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -556,34 +479,6 @@ License:     MIT
 
 -------------------------------------------------------------
 
-Name:        openssl
-Repository:  https://github.com/rust-openssl/rust-openssl
-Authors:     Steven Fackler
-License:     Apache-2.0
-
--------------------------------------------------------------
-
-Name:        openssl-macros
-Repository:  NA
-Authors:     
-License:     MIT/Apache-2.0
-
--------------------------------------------------------------
-
-Name:        openssl-probe
-Repository:  https://github.com/rustls/openssl-probe
-Authors:     Alex Crichton
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        openssl-sys
-Repository:  https://github.com/rust-openssl/rust-openssl
-Authors:     Alex Crichton, Steven Fackler
-License:     MIT
-
--------------------------------------------------------------
-
 Name:        ort
 Repository:  https://github.com/pykeio/ort
 Authors:     pyke.io, Nicolas Bigaouette
@@ -608,20 +503,6 @@ License:     MIT OR Apache-2.0
 Name:        pastey
 Repository:  https://github.com/as1100k/pastey
 Authors:     Aditya Kumar, David Tolnay
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        pem-rfc7468
-Repository:  https://github.com/RustCrypto/formats
-Authors:     RustCrypto Developers
-License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
-Name:        percent-encoding
-Repository:  https://github.com/servo/rust-url/
-Authors:     The rust-url developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -672,13 +553,6 @@ Name:        quote
 Repository:  https://github.com/dtolnay/quote
 Authors:     David Tolnay
 License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        r-efi
-Repository:  https://github.com/r-efi/r-efi
-Authors:     
-License:     MIT OR Apache-2.0 OR LGPL-2.1-or-later
 
 -------------------------------------------------------------
 
@@ -766,20 +640,6 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        rustix
-Repository:  https://github.com/bytecodealliance/rustix
-Authors:     Dan Gohman, Jakub Konka
-License:     Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
-Name:        rustls-pki-types
-Repository:  https://github.com/rustls/pki-types
-Authors:     
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
 Name:        rustversion
 Repository:  https://github.com/dtolnay/rustversion
 Authors:     David Tolnay
@@ -791,27 +651,6 @@ Name:        ryu
 Repository:  https://github.com/dtolnay/ryu
 Authors:     David Tolnay
 License:     Apache-2.0 OR BSL-1.0
-
--------------------------------------------------------------
-
-Name:        schannel
-Repository:  https://github.com/steffengy/schannel-rs
-Authors:     Steven Fackler, Steffen Butzer
-License:     MIT
-
--------------------------------------------------------------
-
-Name:        security-framework
-Repository:  https://github.com/kornelski/rust-security-framework
-Authors:     Steven Fackler, Kornel
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        security-framework-sys
-Repository:  https://github.com/kornelski/rust-security-framework
-Authors:     Steven Fackler, Kornel
-License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
@@ -839,6 +678,13 @@ License:     MIT OR Apache-2.0
 Name:        serde_json
 Repository:  https://github.com/serde-rs/json
 Authors:     
+License:     MIT OR Apache-2.0
+
+-------------------------------------------------------------
+
+Name:        sha2
+Repository:  https://github.com/RustCrypto/hashes
+Authors:     RustCrypto Developers
 License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
@@ -899,13 +745,6 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        tempfile
-Repository:  https://github.com/Stebalien/tempfile
-Authors:     Steven Allen, The Rust Project Developers, Ashley Mannix, Jason White
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
 Name:        thiserror
 Repository:  https://github.com/dtolnay/thiserror
 Authors:     David Tolnay
@@ -945,6 +784,13 @@ Name:        tracing-core
 Repository:  https://github.com/tokio-rs/tracing
 Authors:     Tokio Contributors
 License:     MIT
+
+-------------------------------------------------------------
+
+Name:        typenum
+Repository:  https://github.com/paholg/typenum
+Authors:     
+License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
@@ -1004,34 +850,6 @@ License:     MIT
 
 -------------------------------------------------------------
 
-Name:        ureq
-Repository:  https://github.com/algesten/ureq
-Authors:     Martin Algesten, Jacob Hoffman-Andrews
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        ureq-proto
-Repository:  https://github.com/algesten/ureq-proto
-Authors:     Martin Algesten
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        utf8-zero
-Repository:  https://github.com/algesten/utf8-zero
-Authors:     Simon Sapin, Martin Algesten
-License:     MIT OR Apache-2.0
-
--------------------------------------------------------------
-
-Name:        vcpkg
-Repository:  https://github.com/mcgoo/vcpkg-rs
-Authors:     Jim McGrath
-License:     MIT/Apache-2.0
-
--------------------------------------------------------------
-
 Name:        version_check
 Repository:  https://github.com/SergioBenitez/version_check
 Authors:     Sergio Benitez
@@ -1081,13 +899,6 @@ License:     MIT OR Apache-2.0
 
 -------------------------------------------------------------
 
-Name:        webpki-root-certs
-Repository:  https://github.com/rustls/webpki-roots
-Authors:     
-License:     CDLA-Permissive-2.0
-
--------------------------------------------------------------
-
 Name:        windows-link
 Repository:  https://github.com/microsoft/windows-rs
 Authors:     
@@ -1123,13 +934,6 @@ License:     BSD-2-Clause OR Apache-2.0 OR MIT
 
 -------------------------------------------------------------
 
-Name:        zeroize
-Repository:  https://github.com/RustCrypto/utils
-Authors:     The RustCrypto Project Developers
-License:     Apache-2.0 OR MIT
-
--------------------------------------------------------------
-
 Name:        zmij
 Repository:  https://github.com/dtolnay/zmij
 Authors:     David Tolnay
@@ -1137,15 +941,11 @@ License:     MIT
 
 -------------------------------------------------------------
 
-The binary also contains ONNX Runtime, linked statically by the `ort` crate:
-
--------------------------------------------------------------
-
-Name:        ONNX Runtime
-Repository:  https://github.com/microsoft/onnxruntime
-Authors:     Microsoft Corporation
-License:     MIT
-Notices:     https://github.com/microsoft/onnxruntime/blob/main/ThirdPartyNotices.txt
+ONNX Runtime (Microsoft Corporation, MIT license,
+https://onnxruntime.ai) is not part of this package or its binary. The
+`ort` crate loads it at runtime; laya_install_runtime() downloads
+Microsoft's official build from the NuGet package Microsoft.ML.OnnxRuntime,
+which carries its own license and third-party notices.
 
 -------------------------------------------------------------
 

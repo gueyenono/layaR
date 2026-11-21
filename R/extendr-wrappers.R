@@ -66,4 +66,16 @@ rs_email_state <- function(subject, body, sender, clean, max_chars, extra_json) 
 #' @noRd
 rs_versions <- function() .Call(wrap__rs_versions)
 
+#' Load the ONNX Runtime library at `path`, or report the one already loaded.
+#' @noRd
+rs_runtime_load <- function(path) .Call(wrap__rs_runtime_load, path)
+
+#' The path of the loaded ONNX Runtime library, or NULL.
+#' @noRd
+rs_runtime_loaded <- function() .Call(wrap__rs_runtime_loaded)
+
+#' SHA-512 of a file, as lowercase hex.
+#' @noRd
+rs_file_sha512 <- function(path) .Call(wrap__rs_file_sha512, path)
+
 # nolint end
