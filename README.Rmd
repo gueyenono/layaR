@@ -23,19 +23,17 @@ It wraps Laya's Rust port (`laya-onnx`) through
 [extendr](https://extendr.github.io/) and runs on ONNX Runtime. No Python
 and no server are needed at prediction time.
 
-> **Status:** early development. Linux and macOS only for now; Windows is
-> waiting on an upstream change
-> ([NandhaKishorM/laya#1505](https://github.com/NandhaKishorM/laya/issues/1505)).
+> **Status:** early development.
 
 ## Installation
 
-**Platforms.** layaR runs on Linux (x86_64 and arm64) and on Macs with
-Apple silicon. Windows and Intel Macs are not supported yet: the ONNX
-Runtime library layaR builds against has no prebuilt version for them.
-Windows support is planned.
+**Platforms.** layaR runs on Linux (x86_64 and arm64), Windows (x64) and
+Macs with Apple silicon. Intel Macs are not supported: Microsoft publishes
+no ONNX Runtime build for them. layaR still installs there, and runs if you
+supply ONNX Runtime 1.27 or newer yourself (see `?laya_install_runtime`).
 
-Install from r-universe. On a Mac it gives you a ready-made binary; on
-Linux it builds from source (see below):
+Install from r-universe. On Windows and macOS it gives you a ready-made
+binary; on Linux it builds from source (see below):
 
 ```{r}
 install.packages("layaR", repos = c("https://gueyenono.r-universe.dev",
@@ -43,8 +41,9 @@ install.packages("layaR", repos = c("https://gueyenono.r-universe.dev",
 ```
 
 Building from source, on Linux or with `install_github()`, needs a Rust
-toolchain (rustc 1.85 or newer) and, on Linux, OpenSSL headers
-(`libssl-dev` / `openssl-devel`).
+toolchain (rustc 1.85 or newer). On Windows it also needs
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) and Rust's
+`x86_64-pc-windows-gnu` target.
 
 ```{r}
 # install.packages("remotes")
@@ -82,6 +81,15 @@ laya_import_model("~/laya-exports/multilingual", "multilingual")
 
 `laya_model_root()` explains where models live. A model exported for
 Laya's Rust or TypeScript SDK (in `~/.cache/laya/onnx`) is found too.
+
+### ONNX Runtime
+
+Models run on [ONNX Runtime](https://onnxruntime.ai), which layaR loads at
+run time instead of building it in. The first `laya_download_model()` also
+installs it: a one-time 139 MB download of Microsoft's official build
+(version 1.28.0, from its NuGet package, checked against the published
+checksum), of which layaR keeps about 25 MB. `laya_install_runtime()` does
+this on its own, and `laya_runtime_info()` shows which library is used.
 
 ## Quickstart
 
