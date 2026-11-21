@@ -276,8 +276,10 @@ set_names_x <- function(x) {
 #' @param path The export's folder: it holds `model.onnx` (or `encoder.onnx`
 #'   and `head.onnx`), `rl_agent_config.json` and the tokenizer.
 #' @param checkpoint Which checkpoint the export is.
-#' @param method `"symlink"` (the default) links to the folder without
-#'   copying 1.3 GB; `"copy"` copies it, so the original can be deleted.
+#' @param method `"symlink"` links to the folder without copying 1.3 GB;
+#'   `"copy"` copies it, so the original can be deleted. The default is
+#'   `"symlink"`, except on Windows, where links to folders need special
+#'   permissions and only `"copy"` is supported.
 #' @param overwrite Replace an installed model?
 #' @return The installed path, invisibly.
 #' @examples
@@ -286,9 +288,14 @@ set_names_x <- function(x) {
 #' }
 #' @export
 laya_import_model <- function(path, checkpoint = c("multilingual", "english", "typed-decisions"),
-                              method = c("symlink", "copy"), overwrite = FALSE) {
+                              method = default_import_method(), overwrite = FALSE) {
   checkpoint <- match.arg(checkpoint)
-  method <- match.arg(method)
+  method <- match.arg(method, c("symlink", "copy"))
+  if (method == "symlink" && is_windows()) {
+    laya_abort(c("On Windows, models can only be imported with {.code method = \"copy\"}.",
+                 i = "Links to folders need Developer Mode or administrator rights there."),
+               kind = "invalid_argument")
+  }
   if (!is.character(path) || length(path) != 1 || is.na(path)) {
     laya_abort("{.arg path} must be a single folder path.", kind = "invalid_argument")
   }
@@ -358,6 +365,10 @@ laya_remove_model <- function(checkpoint = c("multilingual", "english", "typed-d
   cli::cli_inform(c(v = "Removed the {.val {checkpoint}} model."))
   invisible(TRUE)
 }
+
+default_import_method <- function() if (is_windows()) "copy" else "symlink"
+
+is_windows <- function() .Platform$OS.type == "windows"
 
 # Sys.readlink() gives "" for a regular file and NA for a missing path.
 is_symlink <- function(path) {

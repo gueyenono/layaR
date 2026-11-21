@@ -18,8 +18,8 @@ use laya::{LayaEngine, LayaOptions, LayaPresets, ModelArtifacts, ModelLayout, Mo
 use serde_json::{Value, json};
 use std::sync::{Arc, Mutex};
 
-/// laya-onnx's git revision; keep in sync with `Cargo.toml`.
-const LAYA_ONNX_REV: &str = "1bf3003bf8a105b1a0aae585958ac7022bc3deb5";
+/// The commit of laya-onnx's pinned tag (v0.5.1); keep in sync with `Cargo.toml`.
+const LAYA_ONNX_REV: &str = "090c540ec4cd0e5c71d539d952f0250e97399fcb";
 const LAYA_ONNX_VERSION: &str = "0.1.0";
 const ORT_VERSION: &str = "2.0.0-rc.13";
 

@@ -56,7 +56,19 @@ test_that("a missing model points to download and import", {
   expect_error(laya_engine("english"), "laya_download_model")
 })
 
+test_that("on Windows, laya_import_model copies and refuses symlinks", {
+  skip_if_not(is_windows())
+  root <- local_model_env()
+  src <- fake_export(file.path(root, "export"))
+  expect_error(laya_import_model(src, "english", method = "symlink"), class = "laya_error_invalid_argument")
+  expect_message(dest <- laya_import_model(src, "english"), "copy")
+  expect_true(file.exists(file.path(dest, "tokenizer", "tokenizer.json")))
+  expect_message(laya_remove_model("english", ask = FALSE), "Removed")
+  expect_true(file.exists(file.path(src, "model.onnx")))
+})
+
 test_that("laya_import_model links or copies an export", {
+  skip_on_os("windows")
   root <- local_model_env()
   src <- fake_export(file.path(root, "export"))
   expect_message(dest <- laya_import_model(src, "english"), "Imported")

@@ -428,7 +428,7 @@ dependencies = [
 [[package]]
 name = "laya-onnx"
 version = "0.1.0"
-source = "git+https://github.com/NandhaKishorM/laya?rev=1bf3003bf8a105b1a0aae585958ac7022bc3deb5#1bf3003bf8a105b1a0aae585958ac7022bc3deb5"
+source = "git+https://github.com/NandhaKishorM/laya?tag=v0.5.1#090c540ec4cd0e5c71d539d952f0250e97399fcb"
 dependencies = [
  "indexmap",
  "log",
