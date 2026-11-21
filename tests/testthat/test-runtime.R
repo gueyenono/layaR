@@ -119,6 +119,7 @@ test_that("a missing runtime points to laya_install_runtime", {
 
 test_that("a real library still loads after a failed attempt", {
   skip_if(!is.null(rs_runtime_loaded()), "a runtime is already loaded in this session")
+  if (runtime_required() && needs_runtime()) laya_install_runtime(ask = FALSE)
   path <- runtime_resolve()$path
   skip_if(is.null(path) || !file.exists(path), "ONNX Runtime not installed")
   bogus <- withr::local_tempfile()

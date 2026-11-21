@@ -31,7 +31,6 @@ jobs:
       # The tests download ONNX Runtime (once per OS, then cached below) and
       # check that it loads. No model is downloaded, so model tests skip.
       LAYAR_TEST_RUNTIME: true
-      R_USER_DATA_DIR: ${{ github.workspace }}/../r-user-data
 
     steps:
       - uses: actions/checkout@v6
@@ -54,11 +53,17 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      # R_user_dir("layaR", "data") outside the checkout, so it can be cached.
+      # (The runner context isn't available in job-level env.)
+      - name: Set R user data dir
+        shell: bash
+        run: echo "R_USER_DATA_DIR=${{ runner.temp }}/r-user-data" >> "$GITHUB_ENV"
+
       # Key on the ONNX Runtime version in R/runtime.R.
       - name: Cache ONNX Runtime
         uses: actions/cache@v6
         with:
-          path: ${{ github.workspace }}/../r-user-data/R/layaR/onnxruntime
+          path: ${{ runner.temp }}/r-user-data/R/layaR/onnxruntime
           key: onnxruntime-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('R/runtime.R') }}
 
       - uses: r-lib/actions/check-r-package@v2
