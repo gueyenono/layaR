@@ -53,7 +53,7 @@ another tool) to layaR's model root, so <code><a href="laya_engine.html">laya_en
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">laya_import_model</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  checkpoint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"multilingual"</span>, <span class="st">"english"</span>, <span class="st">"typed-decisions"</span><span class="op">)</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"symlink"</span>, <span class="st">"copy"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu">default_import_method</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -72,8 +72,10 @@ and <code>head.onnx</code>), <code>rl_agent_config.json</code> and the tokenizer
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p><code>"symlink"</code> (the default) links to the folder without
-copying 1.3 GB; <code>"copy"</code> copies it, so the original can be deleted.</p></dd>
+<dd><p><code>"symlink"</code> links to the folder without copying 1.3 GB;
+<code>"copy"</code> copies it, so the original can be deleted. The default is
+<code>"symlink"</code>, except on Windows, where links to folders need special
+permissions and only <code>"copy"</code> is supported.</p></dd>
 
 
 <dt id="arg-overwrite">overwrite<a class="anchor" aria-label="anchor" href="#arg-overwrite"></a></dt>

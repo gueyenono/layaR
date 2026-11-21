@@ -42,7 +42,15 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="layar-development-version">layaR (development version)<a class="anchor" aria-label="anchor" href="#layar-development-version"></a></h2>
-</div>
+<ul><li>layaR now loads ONNX Runtime when the first engine is created instead of building it in, using the <code>load-dynamic</code> feature that <code>laya-onnx</code> gained for layaR (NandhaKishorM/laya#1505).
+<ul><li>New <code><a href="../reference/laya_install_runtime.html">laya_install_runtime()</a></code> downloads Microsoft’s official ONNX Runtime 1.28.0 build once (139 MB from its NuGet package, checked against the published SHA-512). <code><a href="../reference/laya_download_model.html">laya_download_model()</a></code> calls it when no runtime is installed, and the first engine offers to in interactive sessions.</li>
+<li>New <code><a href="../reference/laya_install_runtime.html">laya_runtime_info()</a></code> shows which library is used. The <code>layaR.onnxruntime</code> option or the <code>ORT_DYLIB_PATH</code> environment variable selects a library of your own (ONNX Runtime 1.27 or newer).</li>
+<li>New error kinds <code>runtime_not_found</code> and <code>runtime_load</code>.</li>
+</ul></li>
+<li>Windows (x64) is supported.</li>
+<li>Building from source no longer downloads anything or needs OpenSSL headers, so it works offline. The compiled package is about 14 MB instead of 50 MB.</li>
+<li>Intel Macs can install layaR, but Microsoft publishes no ONNX Runtime for them: predictions need a library you supply.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="layar-011">layaR 0.1.1<a class="anchor" aria-label="anchor" href="#layar-011"></a></h2>
 <ul><li>

@@ -15,6 +15,7 @@ Kinds from the engine: `io`, `json`, `artifacts_not_found`,
 `no_markers`, `invalid_state`, `unsupported_aggregate`,
 `invalid_window`, `not_supported`, `invalid_min_confidence`. Kinds from
 layaR itself: `model_not_found`, `model_not_published`, `model_exists`,
-`invalid_argument`, `forked`, `bridge_json`, `bridge_invalid_option`,
-`bridge_engine_closed`, `bridge_panic`. Model downloads and imports also
-use the engine's `download`, `io` and `artifacts_not_found`.
+`runtime_not_found`, `runtime_load`, `invalid_argument`, `forked`,
+`bridge_json`, `bridge_invalid_option`, `bridge_engine_closed`,
+`bridge_panic`. Model downloads and imports also use the engine's
+`download`, `io` and `artifacts_not_found`.

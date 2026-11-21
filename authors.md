@@ -8,9 +8,6 @@
   laya-onnx Rust crate and the test fixtures derived from its golden
   tests
 
-- **Microsoft Corporation**. Copyright holder.  
-  ONNX Runtime
-
 - **Authors of the dependency Rust crates**. Copyright holder.  
   see LICENSE.note
 

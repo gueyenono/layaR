@@ -2,6 +2,29 @@
 
 ## layaR (development version)
 
+- layaR now loads ONNX Runtime when the first engine is created instead
+  of building it in, using the `load-dynamic` feature that `laya-onnx`
+  gained for layaR (NandhaKishorM/laya#1505).
+  - New
+    [`laya_install_runtime()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+    downloads Microsoft’s official ONNX Runtime 1.28.0 build once (139
+    MB from its NuGet package, checked against the published SHA-512).
+    [`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
+    calls it when no runtime is installed, and the first engine offers
+    to in interactive sessions.
+  - New
+    [`laya_runtime_info()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+    shows which library is used. The `layaR.onnxruntime` option or the
+    `ORT_DYLIB_PATH` environment variable selects a library of your own
+    (ONNX Runtime 1.27 or newer).
+  - New error kinds `runtime_not_found` and `runtime_load`.
+- Windows (x64) is supported.
+- Building from source no longer downloads anything or needs OpenSSL
+  headers, so it works offline. The compiled package is about 14 MB
+  instead of 50 MB.
+- Intel Macs can install layaR, but Microsoft publishes no ONNX Runtime
+  for them: predictions need a library you supply.
+
 ## layaR 0.1.1
 
 - [`laya_annotate()`](https://gueyenono.github.io/layaR/reference/laya_annotate.md)

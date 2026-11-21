@@ -58,7 +58,8 @@ A loaded checkpoint. The prediction functions use a default engine.
 
 ## Models
 
-Download, import and list exported checkpoints.
+Download, import and list exported checkpoints, and install ONNX
+Runtime.
 
 - [`laya_models()`](https://gueyenono.github.io/layaR/reference/laya_models.md)
   : List checkpoints and whether they are installed
@@ -72,6 +73,9 @@ Download, import and list exported checkpoints.
   [`laya_model_path()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
   [`laya_model_available()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md)
   : Where models live
+- [`laya_install_runtime()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+  [`laya_runtime_info()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+  : Install ONNX Runtime
 
 ## Text utilities
 

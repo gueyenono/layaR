@@ -3,6 +3,8 @@
 Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging
 Face repository into
 [`laya_model_path()`](https://gueyenono.github.io/layaR/reference/laya_model_root.md).
+The first download also installs ONNX Runtime (see
+[`laya_install_runtime()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)).
 Files go to a staging folder first, so an interrupted download resumes
 where it stopped on the next call and a partial download is never
 mistaken for a model.

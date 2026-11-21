@@ -11,7 +11,7 @@ finds it by name.
 laya_import_model(
   path,
   checkpoint = c("multilingual", "english", "typed-decisions"),
-  method = c("symlink", "copy"),
+  method = default_import_method(),
   overwrite = FALSE
 )
 ```
@@ -29,8 +29,10 @@ laya_import_model(
 
 - method:
 
-  `"symlink"` (the default) links to the folder without copying 1.3 GB;
-  `"copy"` copies it, so the original can be deleted.
+  `"symlink"` links to the folder without copying 1.3 GB; `"copy"`
+  copies it, so the original can be deleted. The default is `"symlink"`,
+  except on Windows, where links to folders need special permissions and
+  only `"copy"` is supported.
 
 - overwrite:
 

@@ -32,6 +32,11 @@ layaR reads these options; set them with
   [`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
   uses (`"gueyenono/laya-onnx"`).
 
+- `layaR.onnxruntime`: the path of an ONNX Runtime library to load
+  instead of the one
+  [`laya_install_runtime()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+  downloads.
+
 - `layaR.shared_cache`: `FALSE` stops layaR from looking for models in
   the cache shared with Laya's Rust and TypeScript SDKs.
 
@@ -57,8 +62,6 @@ Other contributors:
 
 - Convai Innovations (laya-onnx Rust crate and the test fixtures derived
   from its golden tests) \[copyright holder\]
-
-- Microsoft Corporation (ONNX Runtime) \[copyright holder\]
 
 - Authors of the dependency Rust crates (see LICENSE.note) \[copyright
   holder\]

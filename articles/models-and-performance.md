@@ -44,6 +44,17 @@ found;
 deletes one (an imported link is removed without touching the original
 files).
 
+Models run on ONNX Runtime, which layaR loads when the first engine is
+created.
+[`laya_install_runtime()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+downloads Microsoft’s official build once
+([`laya_download_model()`](https://gueyenono.github.io/layaR/reference/laya_download_model.md)
+does it for you), and
+[`laya_runtime_info()`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)
+shows which library is used. To use a library of your own, ONNX Runtime
+1.27 or newer, set the `layaR.onnxruntime` option or the
+`ORT_DYLIB_PATH` environment variable to its path.
+
 ## Engines and memory
 
 An engine is a loaded checkpoint. Loading takes a few seconds and holds

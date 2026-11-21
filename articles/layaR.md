@@ -25,6 +25,10 @@ library(layaR)
 laya_download_model("multilingual")
 ```
 
+The first download also installs ONNX Runtime, the library that runs the
+model (a one-time 139 MB download of Microsoft’s official build; see
+[`?laya_install_runtime`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)).
+
 There are three checkpoints:
 
 | Checkpoint | Base encoder | Use it for |

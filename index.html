@@ -63,17 +63,17 @@
 <p>layaR runs <a href="https://github.com/NandhaKishorM/laya" class="external-link">Laya</a> decision models locally from R. You ask typed questions about a piece of text or a record (pick one label, place it on a scale, or say yes/no) and get calibrated probabilities from a single forward pass. Nothing is generated, so there is nothing to parse and nothing to hallucinate.</p>
 <p>It wraps Laya’s Rust port (<code>laya-onnx</code>) through <a href="https://extendr.github.io/" class="external-link">extendr</a> and runs on ONNX Runtime. No Python and no server are needed at prediction time.</p>
 <blockquote>
-<p><strong>Status:</strong> early development. Linux and macOS only for now; Windows is waiting on an upstream change (<a href="https://github.com/NandhaKishorM/laya/issues/1505" class="external-link">NandhaKishorM/laya#1505</a>).</p>
+<p><strong>Status:</strong> early development.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p><strong>Platforms.</strong> layaR runs on Linux (x86_64 and arm64) and on Macs with Apple silicon. Windows and Intel Macs are not supported yet: the ONNX Runtime library layaR builds against has no prebuilt version for them. Windows support is planned.</p>
-<p>Install from r-universe. On a Mac it gives you a ready-made binary; on Linux it builds from source (see below):</p>
+<p><strong>Platforms.</strong> layaR runs on Linux (x86_64 and arm64), Windows (x64) and Macs with Apple silicon. Intel Macs are not supported: Microsoft publishes no ONNX Runtime build for them. layaR still installs there, and runs if you supply ONNX Runtime 1.27 or newer yourself (see <code><a href="reference/laya_install_runtime.html">?laya_install_runtime</a></code>).</p>
+<p>Install from r-universe. On Windows and macOS it gives you a ready-made binary; on Linux it builds from source (see below):</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"layaR"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://gueyenono.r-universe.dev"</span>,</span>
 <span>                                    <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Building from source, on Linux or with <code>install_github()</code>, needs a Rust toolchain (rustc 1.85 or newer) and, on Linux, OpenSSL headers (<code>libssl-dev</code> / <code>openssl-devel</code>).</p>
+<p>Building from source, on Linux or with <code>install_github()</code>, needs a Rust toolchain (rustc 1.85 or newer). On Windows it also needs <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> and Rust’s <code>x86_64-pc-windows-gnu</code> target.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"gueyenono/layaR"</span><span class="op">)</span></span></code></pre></div>
@@ -94,6 +94,11 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/laya_import_model.html">laya_import_model</a></span><span class="op">(</span><span class="st">"~/laya-exports/multilingual"</span>, <span class="st">"multilingual"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="reference/laya_model_root.html">laya_model_root()</a></code> explains where models live. A model exported for Laya’s Rust or TypeScript SDK (in <code>~/.cache/laya/onnx</code>) is found too.</p>
+</div>
+<div class="section level3">
+<h3 id="onnx-runtime">ONNX Runtime<a class="anchor" aria-label="anchor" href="#onnx-runtime"></a>
+</h3>
+<p>Models run on <a href="https://onnxruntime.ai" class="external-link">ONNX Runtime</a>, which layaR loads at run time instead of building it in. The first <code><a href="reference/laya_download_model.html">laya_download_model()</a></code> also installs it: a one-time 139 MB download of Microsoft’s official build (version 1.28.0, from its NuGet package, checked against the published checksum), of which layaR keeps about 25 MB. <code><a href="reference/laya_install_runtime.html">laya_install_runtime()</a></code> does this on its own, and <code><a href="reference/laya_install_runtime.html">laya_runtime_info()</a></code> shows which library is used.</p>
 </div>
 </div>
 <div class="section level2">

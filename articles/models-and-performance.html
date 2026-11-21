@@ -104,6 +104,13 @@ reads it but never writes there.
 is installed, and where it was found; <code><a href="../reference/laya_remove_model.html">laya_remove_model()</a></code>
 deletes one (an imported link is removed without touching the original
 files).</p>
+<p>Models run on ONNX Runtime, which layaR loads when the first engine
+is created. <code><a href="../reference/laya_install_runtime.html">laya_install_runtime()</a></code> downloads Microsoft’s
+official build once (<code><a href="../reference/laya_download_model.html">laya_download_model()</a></code> does it for
+you), and <code><a href="../reference/laya_install_runtime.html">laya_runtime_info()</a></code> shows which library is used.
+To use a library of your own, ONNX Runtime 1.27 or newer, set the
+<code>layaR.onnxruntime</code> option or the <code>ORT_DYLIB_PATH</code>
+environment variable to its path.</p>
 </div>
 <div class="section level2">
 <h2 id="engines-and-memory">Engines and memory<a class="anchor" aria-label="anchor" href="#engines-and-memory"></a>
