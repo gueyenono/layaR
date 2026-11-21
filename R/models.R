@@ -141,7 +141,8 @@ hf_subfolder <- function(checkpoint) {
 #' Download a model
 #'
 #' Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging Face
-#' repository into [laya_model_path()]. Files go to a staging folder first,
+#' repository into [laya_model_path()]. The first download also installs
+#' ONNX Runtime (see [laya_install_runtime()]). Files go to a staging folder first,
 #' so an interrupted download resumes where it stopped on the next call and
 #' a partial download is never mistaken for a model.
 #'
@@ -207,8 +208,11 @@ laya_download_model <- function(checkpoint = c("multilingual", "english", "typed
   }
 
   if (isTRUE(ask)) {
-    ok <- utils::askYesNo(sprintf("Download the %s model (about 1.3 GB) from %s to %s?",
-                                  checkpoint, repo, dest))
+    extra <- if (needs_runtime()) {
+      sprintf(", plus ONNX Runtime (%d MB) on first use", ort_nupkg_size_mb)
+    } else ""
+    ok <- utils::askYesNo(sprintf("Download the %s model (about 1.3 GB) from %s to %s%s?",
+                                  checkpoint, repo, dest, extra))
     if (!isTRUE(ok)) {
       cli::cli_inform("Download cancelled.")
       return(invisible(NULL))
@@ -242,7 +246,13 @@ laya_download_model <- function(checkpoint = c("multilingual", "english", "typed
                kind = "io")
   }
   cli::cli_inform(c(v = "Installed the {.val {checkpoint}} model at {.path {dest}}."))
+  if (needs_runtime()) laya_install_runtime(ask = FALSE)
   invisible(dest)
+}
+
+# TRUE when no ONNX Runtime is available but layaR can download one.
+needs_runtime <- function() {
+  is.null(runtime_resolve()) && !is.null(ort_platform())
 }
 
 remote_exists <- function(url, headers = NULL) {

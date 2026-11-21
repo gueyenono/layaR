@@ -37,6 +37,7 @@ test_that("laya_annotate checks its arguments before predicting", {
 
 test_that("laya_annotate adds typed answer columns", {
   skip_if_not(laya_model_available("multilingual"), "no local multilingual model")
+  skip_without_runtime()
   out <- laya_annotate(tickets, qs, state = c("subject", "body"), progress = FALSE)
   expect_identical(names(out), c(names(tickets), "department", "department_confidence",
                                  "urgency", "urgency_confidence", "churn_risk", "churn_risk_confidence"))

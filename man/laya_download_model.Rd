@@ -41,7 +41,8 @@ The model's path, invisibly.
 }
 \description{
 Downloads an exported ONNX checkpoint (1.3 to 1.6 GB) from a Hugging Face
-repository into \code{\link[=laya_model_path]{laya_model_path()}}. Files go to a staging folder first,
+repository into \code{\link[=laya_model_path]{laya_model_path()}}. The first download also installs
+ONNX Runtime (see \code{\link[=laya_install_runtime]{laya_install_runtime()}}). Files go to a staging folder first,
 so an interrupted download resumes where it stopped on the next call and
 a partial download is never mistaken for a model.
 }

@@ -18,6 +18,7 @@ Kinds from the engine: \code{io}, \code{json}, \code{artifacts_not_found},
 \code{invalid_state}, \code{unsupported_aggregate}, \code{invalid_window},
 \code{not_supported}, \code{invalid_min_confidence}. Kinds from layaR itself:
 \code{model_not_found}, \code{model_not_published}, \code{model_exists},
+\code{runtime_not_found}, \code{runtime_load},
 \code{invalid_argument}, \code{forked}, \code{bridge_json}, \code{bridge_invalid_option},
 \code{bridge_engine_closed}, \code{bridge_panic}. Model downloads and imports also
 use the engine's \code{download}, \code{io} and \code{artifacts_not_found}.

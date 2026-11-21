@@ -36,6 +36,7 @@ test_that("model root follows the option, then LAYA_ONNX_ROOT", {
 
 skip_if_no_model <- function() {
   skip_if_not(laya_model_available("multilingual"), "no local multilingual model")
+  skip_without_runtime()
 }
 
 test_that("laya_predict answers every question", {

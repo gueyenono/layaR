@@ -13,6 +13,8 @@
 #'   [laya_model_root()]).
 #' * `layaR.model_repo`: the Hugging Face repository
 #'   [laya_download_model()] uses (`"gueyenono/laya-onnx"`).
+#' * `layaR.onnxruntime`: the path of an ONNX Runtime library to load instead
+#'   of the one [laya_install_runtime()] downloads.
 #' * `layaR.shared_cache`: `FALSE` stops layaR from looking for models in the
 #'   cache shared with Laya's Rust and TypeScript SDKs.
 "_PACKAGE"

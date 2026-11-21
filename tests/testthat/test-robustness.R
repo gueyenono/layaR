@@ -35,6 +35,7 @@ test_that("engines refuse to run in a forked child", {
 
   skip_if_no_model <- !laya_model_available("multilingual")
   if (skip_if_no_model) skip("no local multilingual model")
+  skip_without_runtime()
   real <- laya_engine("multilingual", intra_op_threads = 1)
   on.exit(laya_engine_close(real))
   child <- parallel::mcparallel(tryCatch(
@@ -49,6 +50,7 @@ test_that("engines refuse to run in a forked child", {
 
 test_that("engines are freed by garbage collection without crashing", {
   skip_if_not(laya_model_available("multilingual"), "no local multilingual model")
+  skip_without_runtime()
   eng <- laya_engine("multilingual", intra_op_threads = 1)
   rm(eng)
   gc()

@@ -15,7 +15,9 @@ fake_export <- function(dir, layout = c("fused", "split")) {
 
 local_model_env <- function(env = parent.frame()) {
   root <- withr::local_tempdir(.local_envir = env)
+  # A runtime "is installed", so laya_download_model() doesn't fetch the real one.
   withr::local_options(layaR.model_root = file.path(root, "models"), layaR.shared_cache = FALSE,
+                       layaR.onnxruntime = file.path(root, "libonnxruntime-fake"),
                        .local_envir = env)
   root
 }

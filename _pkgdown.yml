@@ -41,13 +41,14 @@ reference:
       - laya_default_engine
       - laya_engine_info
   - title: Models
-    desc: Download, import and list exported checkpoints.
+    desc: Download, import and list exported checkpoints, and install ONNX Runtime.
     contents:
       - laya_models
       - laya_download_model
       - laya_import_model
       - laya_remove_model
       - laya_model_root
+      - laya_install_runtime
   - title: Text utilities
     desc: Language detection and email cleaning; no model needed.
     contents:
