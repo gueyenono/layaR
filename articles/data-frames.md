@@ -49,14 +49,14 @@ which keeps the field names as context.
 annotated <- laya_annotate(tickets, questions, state = c("subject", "body"))
 annotated[, -(2:3)]
 #>   id department department_confidence urgency urgency_confidence churn_risk
-#> 1  1    billing                1.0000  1.8407             0.5858     0.6003
+#> 1  1    billing                1.0000  1.8407             0.5858     0.6004
 #> 2  2  technical                0.9867  1.8314             0.5719     0.5041
 #> 3  3      sales                0.9935  1.6067             0.3052     0.0227
 #> 4  4  technical                0.7906  1.8426             0.5930     0.9880
 #> 5  5  technical                0.7456  1.6526             0.3477     0.0034
 #> 6  6  technical                0.8752  1.9345             0.7765     0.9800
 #>   churn_risk_confidence
-#> 1                0.6003
+#> 1                0.6004
 #> 2                0.5041
 #> 3                0.9773
 #> 4                0.9880
@@ -83,7 +83,7 @@ table(annotated$department)
 #>         1         4         1         0
 annotated |> subset(churn_risk > 0.5, select = c(id, subject, churn_risk))
 #>   id              subject churn_risk
-#> 1  1     Duplicate charge     0.6003
+#> 1  1     Duplicate charge     0.6004
 #> 2  2 App crashes on login     0.5041
 #> 4  4    Cancel my account     0.9880
 #> 6  6       Server down!!!     0.9800
@@ -145,7 +145,7 @@ head(as.data.frame(batch), 6)
 #>   state_id         id   type    answer  value confidence answer_confidence
 #> 1        1 department choice   billing 1.0000     1.0000            1.0000
 #> 2        1    urgency  score      1.84 1.8407     0.5858            0.8478
-#> 3        1 churn_risk   noul      TRUE 0.6003     0.6003            0.6003
+#> 3        1 churn_risk   noul      TRUE 0.6004     0.6004            0.6004
 #> 4        2 department choice technical 0.9976     0.9867            0.9976
 #> 5        2    urgency  score      1.83 1.8314     0.5719            0.8380
 #> 6        2 churn_risk   noul      TRUE 0.5041     0.5041            0.5041

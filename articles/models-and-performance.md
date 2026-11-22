@@ -71,7 +71,7 @@ before <- rss_mb()
 load_time <- system.time(engine <- laya_engine("multilingual"))[["elapsed"]]
 c(load_seconds = round(load_time, 1), memory_mb = round(rss_mb() - before))
 #> load_seconds    memory_mb 
-#>            2          868
+#>          1.9        869.0
 engine
 #> <laya_engine> multilingual · fused ONNX · max_len 1024 · head_max_len 256
 #>   /home/gueyenono/.cache/R/layaR/onnx/multilingual
@@ -128,9 +128,12 @@ below, with the multilingual checkpoint.
 ``` r
 
 c(cpu = sub(".*: *", "", grep("model name", readLines("/proc/cpuinfo"), value = TRUE)[1]),
-  cores = parallel::detectCores())
+  cores = parallel::detectCores(),
+  physical_cores = sub(".*: *", "", grep("cpu cores", readLines("/proc/cpuinfo"), value = TRUE)[1]))
 #>                                        cpu                                      cores 
-#> "Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz"                                        "8"
+#> "Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz"                                        "8" 
+#>                             physical_cores 
+#>                                        "4"
 ```
 
 ``` r
@@ -178,14 +181,14 @@ opts <- layaR:::predict_options(NULL, NULL, NULL, NULL)
 overhead <- bench::mark(
   laya_predict = laya_predict(state, qs, engine = engine),
   rust_only = layaR:::rs_predict(ptr, state_json, qs_json, opts),
-  check = FALSE, min_iterations = 30
+  check = FALSE, min_iterations = 100
 )
 overhead[, c("expression", "min", "median")]
 #> # A tibble: 2 × 3
 #>   expression        min   median
 #>   <bch:expr>   <bch:tm> <bch:tm>
-#> 1 laya_predict    170ms    172ms
-#> 2 rust_only       169ms    171ms
+#> 1 laya_predict    167ms    175ms
+#> 2 rust_only       164ms    173ms
 ```
 
 The two are within measurement noise of each other: building the JSON,
@@ -217,11 +220,11 @@ data.frame(method = as.character(batches$expression),
            seconds = round(as.numeric(batches$median), 2),
            texts_per_second = round(64 / as.numeric(batches$median), 1))
 #>                     method seconds texts_per_second
-#> 1 laya_predict() in a loop   15.08              4.2
-#> 2 batch_size = 1 (default)   13.96              4.6
-#> 3   batch_size = 4, sorted   13.99              4.6
-#> 4  batch_size = 16, sorted   18.32              3.5
-#> 5       whole chunk (NULL)   23.14              2.8
+#> 1 laya_predict() in a loop   10.91              5.9
+#> 2 batch_size = 1 (default)   10.88              5.9
+#> 3   batch_size = 4, sorted   11.74              5.4
+#> 4  batch_size = 16, sorted   14.79              4.3
+#> 5       whole chunk (NULL)   19.33              3.3
 ```
 
 The answers are the same whatever the batch size; only the speed
@@ -234,7 +237,9 @@ Even with the default batch size,
 is the better tool for many texts than a loop: it checks the questions
 once, shows a progress bar, and stops cleanly when interrupted.
 `chunk_size` only decides how often R gets control back for that; it
-barely changes throughput:
+doesn’t change throughput in any consistent way. The differences below
+are run-to-run noise, and which size comes out fastest changes from one
+run to the next:
 
 ``` r
 
@@ -245,14 +250,14 @@ chunks <- bench::mark(
                                          progress = FALSE),
   `chunk_size = 256` = laya_predict_batch(texts, qs, engine = engine, chunk_size = 256,
                                           progress = FALSE),
-  check = FALSE, min_iterations = 2, filter_gc = FALSE
+  check = FALSE, min_iterations = 3, filter_gc = FALSE
 )
 data.frame(method = as.character(chunks$expression),
            texts_per_second = round(length(texts) / as.numeric(chunks$median), 1))
 #>             method texts_per_second
-#> 1  chunk_size = 16              4.0
-#> 2  chunk_size = 64              4.3
-#> 3 chunk_size = 256              4.3
+#> 1  chunk_size = 16              5.2
+#> 2  chunk_size = 64              3.8
+#> 3 chunk_size = 256              4.1
 laya_engine_close(engine)
 ```
 
@@ -271,11 +276,21 @@ by_threads <- do.call(rbind, lapply(threads, function(n) {
 }))
 by_threads
 #>   intra_op_threads texts_per_second
-#> 1                1              1.9
+#> 1                1              2.0
 #> 2                2              3.5
-#> 3                4              4.3
-#> 4                8              5.3
+#> 3                4              5.7
+#> 4                8              5.2
 ```
+
+The default, one thread per physical core, is usually the best setting.
+Going past the physical cores, for example to
+[`parallel::detectCores()`](https://rdrr.io/r/parallel/detectCores.html)
+on a CPU with hyperthreading, adds no speed: the extra threads share
+cores with the others, and with the ONNX Runtime build layaR downloads
+they can make predictions much slower. On Windows and macOS,
+`parallel::detectCores(logical = FALSE)` gives the number of physical
+cores; on Linux it counts logical CPUs too, so check “Core(s) per
+socket” in the output of `lscpu` instead.
 
 ### Asking several questions at once
 
@@ -295,16 +310,16 @@ n_questions <- bench::mark(
   `3 questions, one call` = laya_predict(texts[1], qs, engine = engine),
   `triage preset (5 questions)` = laya_predict(list(message = texts[1]), laya_preset("triage"),
                                                engine = engine),
-  check = FALSE, min_iterations = 20
+  check = FALSE, min_iterations = 50
 )
 n_questions[, c("expression", "median")]
 #> # A tibble: 4 × 2
 #>   expression                    median
 #>   <bch:expr>                  <bch:tm>
-#> 1 1 question                    81.9ms
-#> 2 3 questions, one call each   223.5ms
-#> 3 3 questions, one call        174.2ms
-#> 4 triage preset (5 questions)  513.4ms
+#> 1 1 question                    67.6ms
+#> 2 3 questions, one call each   206.1ms
+#> 3 3 questions, one call        168.9ms
+#> 4 triage preset (5 questions)  486.5ms
 laya_engine_close(engine)
 ```
 

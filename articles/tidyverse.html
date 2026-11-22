@@ -345,7 +345,7 @@ This is the tidyverse version of the <code><a href="https://rdrr.io/r/base/lappl
 <code><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply()</a></code> code in the other vignettes:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">batch</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_dbl</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">$</span><span class="va">answers</span><span class="op">$</span><span class="va">churn_risk</span><span class="op">$</span><span class="va">noul</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.6003 0.5041 0.0227 0.9880 0.0034 0.9800</span></span>
+<span><span class="co">#&gt; [1] 0.6004 0.5041 0.0227 0.9880 0.0034 0.9800</span></span>
 <span><span class="va">batch</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_chr</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">$</span><span class="va">answers</span><span class="op">$</span><span class="va">department</span><span class="op">$</span><span class="va">choice</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "billing"   "technical" "sales"     "technical" "technical" "technical"</span></span></code></pre></div>
 <p>A good use is comparing question wordings against a few labelled

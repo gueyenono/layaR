@@ -225,7 +225,8 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <ul><li>
 <code>README.Rmd</code> → <code>README.md</code>: <code>devtools::build_readme()</code>. It needs a model.</li>
 <li>Vignettes: edit <code>vignettes/*.Rmd.orig</code> (and <code>vignettes/articles/*.Rmd.orig</code>), then run <code>Rscript data-raw/knit_vignettes.R [name ...]</code> after installing the current layaR. This needs models and takes a while for the benchmarks.
-<ul><li>The 0.2.0 runtime prose was edited in both the <code>.orig</code> and the knitted <code>.Rmd</code> files, but the vignettes weren’t re-knitted.</li>
+<ul><li>Knit the benchmarks (<code>models-and-performance</code>) on an idle machine: closing a browser or chat app isn’t enough if it keeps running in the background. Benchmark tables are noisy; check that the prose still matches the numbers after each knit.</li>
+<li>Prose-only fixes can be made in both the <code>.orig</code> and the knitted <code>.Rmd</code> without knitting again.</li>
 </ul></li>
 <li>Add each new exported function to <code>_pkgdown.yml</code>’s reference index.</li>
 <li>After any dependency change, regenerate <code>LICENSE.note</code> with <code>rextendr::write_license_note()</code>. Then re-add the hand-written tail: ORT is not included, and the test fixtures are Apache-2.0 from Convai Innovations.</li>

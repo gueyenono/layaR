@@ -126,7 +126,7 @@ unless you set it) on first use and keeps it for the session.</p>
 <span><span class="va">load_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="va">engine</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/laya_engine.html">laya_engine</a></span><span class="op">(</span><span class="st">"multilingual"</span><span class="op">)</span><span class="op">)</span><span class="op">[[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>load_seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">load_time</span>, <span class="fl">1</span><span class="op">)</span>, memory_mb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu">rss_mb</span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">before</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; load_seconds    memory_mb </span></span>
-<span><span class="co">#&gt;            2          868</span></span>
+<span><span class="co">#&gt;          1.9        869.0</span></span>
 <span><span class="va">engine</span></span>
 <span><span class="co">#&gt; &lt;laya_engine&gt; multilingual · fused ONNX · max_len 1024 · head_max_len 256</span></span>
 <span><span class="co">#&gt;   /home/gueyenono/.cache/R/layaR/onnx/multilingual</span></span></code></pre></div>
@@ -178,9 +178,12 @@ workers share the cores between them.</p>
 machine below, with the multilingual checkpoint.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>cpu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*: *"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"model name"</span>, <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"/proc/cpuinfo"</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>  cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  cores <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  physical_cores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*: *"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"cpu cores"</span>, <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">"/proc/cpuinfo"</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                        cpu                                      cores </span></span>
-<span><span class="co">#&gt; "Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz"                                        "8"</span></span></code></pre></div>
+<span><span class="co">#&gt; "Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz"                                        "8" </span></span>
+<span><span class="co">#&gt;                             physical_cores </span></span>
+<span><span class="co">#&gt;                                        "4"</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/laya_questions.html">laya_questions</a></span><span class="op">(</span></span>
 <span>  department <span class="op">=</span> <span class="fu"><a href="../reference/laya_question.html">laya_choice</a></span><span class="op">(</span><span class="st">"Which department should handle this request?"</span>,</span>
@@ -221,14 +224,14 @@ with the JSON prepared in advance, shows what the R side costs:</p>
 <span><span class="va">overhead</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu">mark</span><span class="op">(</span></span>
 <span>  laya_predict <span class="op">=</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">state</span>, <span class="va">qs</span>, engine <span class="op">=</span> <span class="va">engine</span><span class="op">)</span>,</span>
 <span>  rust_only <span class="op">=</span> <span class="fu">layaR</span><span class="fu">:::</span><span class="fu">rs_predict</span><span class="op">(</span><span class="va">ptr</span>, <span class="va">state_json</span>, <span class="va">qs_json</span>, <span class="va">opts</span><span class="op">)</span>,</span>
-<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">30</span></span>
+<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">overhead</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"expression"</span>, <span class="st">"min"</span>, <span class="st">"median"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 3</span></span>
 <span><span class="co">#&gt;   expression        min   median</span></span>
 <span><span class="co">#&gt;   &lt;bch:expr&gt;   &lt;bch:tm&gt; &lt;bch:tm&gt;</span></span>
-<span><span class="co">#&gt; 1 laya_predict    170ms    172ms</span></span>
-<span><span class="co">#&gt; 2 rust_only       169ms    171ms</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 laya_predict    167ms    175ms</span></span>
+<span><span class="co">#&gt; 2 rust_only       164ms    173ms</span></span></code></pre></div>
 <p>The two are within measurement noise of each other: building the
 JSON, checking arguments and turning the result into a list cost almost
 nothing next to the forward pass.</p>
@@ -256,11 +259,11 @@ text per forward pass by default (<code>batch_size = 1</code>, or the
 <span>           seconds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">batches</span><span class="op">$</span><span class="va">median</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>           texts_per_second <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fl">64</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">batches</span><span class="op">$</span><span class="va">median</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                     method seconds texts_per_second</span></span>
-<span><span class="co">#&gt; 1 laya_predict() in a loop   15.08              4.2</span></span>
-<span><span class="co">#&gt; 2 batch_size = 1 (default)   13.96              4.6</span></span>
-<span><span class="co">#&gt; 3   batch_size = 4, sorted   13.99              4.6</span></span>
-<span><span class="co">#&gt; 4  batch_size = 16, sorted   18.32              3.5</span></span>
-<span><span class="co">#&gt; 5       whole chunk (NULL)   23.14              2.8</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 laya_predict() in a loop   10.91              5.9</span></span>
+<span><span class="co">#&gt; 2 batch_size = 1 (default)   10.88              5.9</span></span>
+<span><span class="co">#&gt; 3   batch_size = 4, sorted   11.74              5.4</span></span>
+<span><span class="co">#&gt; 4  batch_size = 16, sorted   14.79              4.3</span></span>
+<span><span class="co">#&gt; 5       whole chunk (NULL)   19.33              3.3</span></span></code></pre></div>
 <p>The answers are the same whatever the batch size; only the speed
 changes. If you run on different hardware, try a few values of
 <code>batch_size</code> with <code>sort_by_length = TRUE</code> on your
@@ -270,7 +273,9 @@ one.</p>
 is the better tool for many texts than a loop: it checks the questions
 once, shows a progress bar, and stops cleanly when interrupted.
 <code>chunk_size</code> only decides how often R gets control back for
-that; it barely changes throughput:</p>
+that; it doesn’t change throughput in any consistent way. The
+differences below are run-to-run noise, and which size comes out fastest
+changes from one run to the next:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chunks</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu">mark</span><span class="op">(</span></span>
 <span>  `chunk_size = 16` <span class="op">=</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">qs</span>, engine <span class="op">=</span> <span class="va">engine</span>, chunk_size <span class="op">=</span> <span class="fl">16</span>,</span>
@@ -279,14 +284,14 @@ that; it barely changes throughput:</p>
 <span>                                         progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  `chunk_size = 256` <span class="op">=</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict_batch</a></span><span class="op">(</span><span class="va">texts</span>, <span class="va">qs</span>, engine <span class="op">=</span> <span class="va">engine</span>, chunk_size <span class="op">=</span> <span class="fl">256</span>,</span>
 <span>                                          progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
-<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">2</span>, filter_gc <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">3</span>, filter_gc <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">chunks</span><span class="op">$</span><span class="va">expression</span><span class="op">)</span>,</span>
 <span>           texts_per_second <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">texts</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">chunks</span><span class="op">$</span><span class="va">median</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             method texts_per_second</span></span>
-<span><span class="co">#&gt; 1  chunk_size = 16              4.0</span></span>
-<span><span class="co">#&gt; 2  chunk_size = 64              4.3</span></span>
-<span><span class="co">#&gt; 3 chunk_size = 256              4.3</span></span>
+<span><span class="co">#&gt; 1  chunk_size = 16              5.2</span></span>
+<span><span class="co">#&gt; 2  chunk_size = 64              3.8</span></span>
+<span><span class="co">#&gt; 3 chunk_size = 256              4.1</span></span>
 <span><span class="fu"><a href="../reference/laya_engine_info.html">laya_engine_close</a></span><span class="op">(</span><span class="va">engine</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -304,10 +309,19 @@ that; it barely changes throughput:</p>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">by_threads</span></span>
 <span><span class="co">#&gt;   intra_op_threads texts_per_second</span></span>
-<span><span class="co">#&gt; 1                1              1.9</span></span>
+<span><span class="co">#&gt; 1                1              2.0</span></span>
 <span><span class="co">#&gt; 2                2              3.5</span></span>
-<span><span class="co">#&gt; 3                4              4.3</span></span>
-<span><span class="co">#&gt; 4                8              5.3</span></span></code></pre></div>
+<span><span class="co">#&gt; 3                4              5.7</span></span>
+<span><span class="co">#&gt; 4                8              5.2</span></span></code></pre></div>
+<p>The default, one thread per physical core, is usually the best
+setting. Going past the physical cores, for example to
+<code><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">parallel::detectCores()</a></code> on a CPU with hyperthreading, adds
+no speed: the extra threads share cores with the others, and with the
+ONNX Runtime build layaR downloads they can make predictions much
+slower. On Windows and macOS,
+<code>parallel::detectCores(logical = FALSE)</code> gives the number of
+physical cores; on Linux it counts logical CPUs too, so check “Core(s)
+per socket” in the output of <code>lscpu</code> instead.</p>
 </div>
 <div class="section level3">
 <h3 id="asking-several-questions-at-once">Asking several questions at once<a class="anchor" aria-label="anchor" href="#asking-several-questions-at-once"></a>
@@ -326,16 +340,16 @@ them one by one:</p>
 <span>  `3 questions, one call` <span class="op">=</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="va">texts</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">qs</span>, engine <span class="op">=</span> <span class="va">engine</span><span class="op">)</span>,</span>
 <span>  `triage preset (5 questions)` <span class="op">=</span> <span class="fu"><a href="../reference/laya_predict.html">laya_predict</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>message <span class="op">=</span> <span class="va">texts</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="../reference/laya_preset.html">laya_preset</a></span><span class="op">(</span><span class="st">"triage"</span><span class="op">)</span>,</span>
 <span>                                               engine <span class="op">=</span> <span class="va">engine</span><span class="op">)</span>,</span>
-<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">20</span></span>
+<span>  check <span class="op">=</span> <span class="cn">FALSE</span>, min_iterations <span class="op">=</span> <span class="fl">50</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">n_questions</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"expression"</span>, <span class="st">"median"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 2</span></span>
 <span><span class="co">#&gt;   expression                    median</span></span>
 <span><span class="co">#&gt;   &lt;bch:expr&gt;                  &lt;bch:tm&gt;</span></span>
-<span><span class="co">#&gt; 1 1 question                    81.9ms</span></span>
-<span><span class="co">#&gt; 2 3 questions, one call each   223.5ms</span></span>
-<span><span class="co">#&gt; 3 3 questions, one call        174.2ms</span></span>
-<span><span class="co">#&gt; 4 triage preset (5 questions)  513.4ms</span></span>
+<span><span class="co">#&gt; 1 1 question                    67.6ms</span></span>
+<span><span class="co">#&gt; 2 3 questions, one call each   206.1ms</span></span>
+<span><span class="co">#&gt; 3 3 questions, one call        168.9ms</span></span>
+<span><span class="co">#&gt; 4 triage preset (5 questions)  486.5ms</span></span>
 <span><span class="fu"><a href="../reference/laya_engine_info.html">laya_engine_close</a></span><span class="op">(</span><span class="va">engine</span><span class="op">)</span></span></code></pre></div>
 <p>Long option descriptions cost more than short ones: the triage
 preset’s five questions carry more text than the three above.</p>
