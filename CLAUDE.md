@@ -39,7 +39,10 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - **Open items:**
   - Install the 0.2.0 binary from r-universe on Windows and macOS (needs a real machine).
   - Linux arm64 is untested.
-  - Ask upstream to move `laya-onnx` to ort rc.15+ (fixes the failed-load bug below); not filed.
+  - Upstream laya#1527 (filed 2026-11-22) asks `laya-onnx` to move to ort rc.15, which fixes the
+    failed-load bug below. rc.15 needs a code change in `laya-onnx` (`Session::builder` takes an
+    `Environment`) and in layaR's `runtime.rs` (`init_from(path)?.build()?` returns the
+    environment), and Rust 1.92.
   - CRAN (next item).
 - **CRAN:** not submitted. The blocker (ORT downloaded at build time) is gone. What's left is
   plan §9.4 "Other CRAN checklist items" and Phase 7: vendoring (`rextendr::vendor_pkgs()`),
@@ -80,7 +83,7 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 
 ## Build and test
 
-- Since 0.2.0, building needs only Rust (rustc >= 1.85): no OpenSSL and no network beyond
+- Since 0.2.0, building needs only Rust (rustc >= 1.88): no OpenSSL and no network beyond
   fetching crates.
 - Install: `R CMD INSTALL .`. The release build with LTO takes a few minutes; `src/rust/target`
   is git-ignored and can grow to several GB.
