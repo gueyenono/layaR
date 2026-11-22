@@ -150,6 +150,20 @@ Debian packaging, Nix sandboxes) benefits too.
 
 ---
 
+## Issue U6 — Move `laya-onnx` to ort 2.0.0-rc.15
+
+**Posted 2026-11-22 as https://github.com/NandhaKishorM/laya/issues/1527.**
+
+ort rc.13 can't recover from a failed `load-dynamic` load (its `OnceLock` marks the slot
+initialized on error); fixed in pykeio/ort@0381990, released in rc.15 (not rc.14). `laya-onnx`'s
+`ort = "2.0.0-rc.13"` already resolves to rc.15, but `laya-onnx` doesn't compile against it:
+pykeio/ort#610 made `Session::builder` take an `&Environment` (one call site,
+`laya_engine.rs:1002`). The issue proposes rc.15 with `api-27` kept, plus an optional
+`Environment` in `LayaOptions` (or a `laya-onnx`-owned one by default). rc.15 needs Rust 1.92.
+layaR keeps its own pre-check in `runtime.rs` until then.
+
+---
+
 ## Not filed for now
 
 - **U3 (serde on results and questions)**, **U4 (noul `labels`, hooks, histogram calibration)**

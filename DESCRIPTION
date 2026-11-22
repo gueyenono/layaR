@@ -18,7 +18,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 Config/rextendr/version: 0.5.0
-SystemRequirements: Cargo (Rust's package manager), rustc >= 1.85.0, xz,
+SystemRequirements: Cargo (Rust's package manager), rustc >= 1.88.0, xz,
     ONNX Runtime >= 1.27 (downloaded on first use by
     laya_install_runtime())
 Depends: 
