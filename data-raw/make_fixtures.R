@@ -12,7 +12,7 @@
 args <- commandArgs(trailingOnly = TRUE)
 golden <- if (length(args)) args[[1]] else "laya-repo/laya-rust/tests/golden"
 out_dir <- "tests/testthat/fixtures/parity"
-checkpoints <- c("english", "multilingual")
+checkpoints <- c("english", "multilingual", "typed-decisions")
 
 # Run by default (about 30 cases per checkpoint). Every error case also runs by
 # default, since errors fail before the forward pass. Set LAYAR_PARITY=all to

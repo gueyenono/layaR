@@ -124,3 +124,7 @@ test_that("multilingual results match the Python SDK", {
 test_that("english results match the Python SDK", {
   check_parity("english")
 })
+
+test_that("typed-decisions results match the Python SDK", {
+  check_parity("typed-decisions")
+})
