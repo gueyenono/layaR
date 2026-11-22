@@ -11,18 +11,21 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Notes about the maintainer's own machine (paths, Nix setup) are in `CLAUDE.local.md`, which
   is not committed.
 
-## State (2026-11-21)
+## State (2026-11-22)
 
-- **Latest release: v0.2.0** (2026-11-21). `main` is at `0.2.0.9000` (development).
+- **Latest release: v0.2.0** (2026-11-21). `main` is at `0.2.0.9000` (development). Since the
+  release, `main` gained only tests and docs: the typed-decisions parity fixture (PR #16),
+  vignettes re-knitted with 0.2.0 plus advice on threads (PR #17), and these notes (PRs #14,
+  #15). `NEWS.md`'s development section is still empty.
 - 0.2.0 switched to loading ORT at run time (`load-dynamic`, PR #12). Before that, ORT was linked
   statically and downloaded during the build, which broke Windows and Intel Macs.
 - **Platforms:**
 
   | Platform | Status |
   |---|---|
-  | Linux x86_64 | Supported. CI, plus full parity (`LAYAR_PARITY=all`) run locally (english, multilingual). |
-  | macOS arm64 | Supported. CI, plus model tests via `model-tests.yaml`. |
-  | Windows x64 | Supported since 0.2.0. CI, plus model tests via `model-tests.yaml`. |
+  | Linux x86_64 | Supported. CI, plus full parity (`LAYAR_PARITY=all`) run locally for all three checkpoints. |
+  | macOS arm64 | Supported. CI, plus model tests and parity for all three checkpoints via `model-tests.yaml`. |
+  | Windows x64 | Supported since 0.2.0. CI, plus model tests and parity for all three checkpoints via `model-tests.yaml`. |
   | Linux arm64 | Should work (the ORT download covers it), but untested. |
   | Intel Mac | Builds, but Microsoft publishes no ORT for it; predictions need a user-supplied ORT >= 1.27. |
   | Windows arm64, wasm | Not supported. |
@@ -33,6 +36,11 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   fails. Windows arm64 and Intel Mac binaries build, but have no ORT download. A Linux install
   from r-universe was verified; Windows and macOS installs from r-universe are not yet. Status:
   https://gueyenono.r-universe.dev/api/packages/layaR
+- **Open items:**
+  - Install the 0.2.0 binary from r-universe on Windows and macOS (needs a real machine).
+  - Linux arm64 is untested.
+  - Ask upstream to move `laya-onnx` to ort rc.15+ (fixes the failed-load bug below); not filed.
+  - CRAN (next item).
 - **CRAN:** not submitted. The blocker (ORT downloaded at build time) is gone. What's left is
   plan §9.4 "Other CRAN checklist items" and Phase 7: vendoring (`rextendr::vendor_pkgs()`),
   tarball size, `cran-comments.md`, and win-builder/rhub checks.
@@ -119,6 +127,12 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   `OrtGetApiBase`, version) and sets `POISONED` if `ort` still fails. ort rc.15 fixed this
   (commit 0381990), but laya v0.5.1 uses rc.13. If laya moves to rc.15+, the pre-check can stay
   but the comment should be updated.
+- **Threads:** with Microsoft's ORT build, more intra-op threads than physical cores is slow.
+  On a 4-core/8-thread i7-4790K (2026-11-22), 0.2.0 and 0.1.1 (ORT linked in) took the same time
+  at 2 and 4 threads and at the default (one per physical core). At 8 threads 0.2.0 was about 45%
+  slower (about 900 ms against 600 ms for the triage preset). The default never goes past the
+  physical cores. The vignette advises against more, and notes that
+  `parallel::detectCores(logical = FALSE)` doesn't count physical cores on Linux.
 - **Windows:** `onnxruntime.dll` needs the MSVC runtime (`vcruntime140`/`msvcp140`). The
   `runtime_load` error mentions the Visual C++ Redistributable.
 
@@ -151,9 +165,16 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
     containing `..`.
 - `model-tests.yaml`: manual. It also runs on PRs that change the workflow file.
   - Start it with `gh workflow run model-tests.yaml --ref <branch> -f os=windows-latest|macos-latest|ubuntu-latest|all -f checkpoint=multilingual|english|typed-decisions|all -f parity=core|all`.
-  - Models are cached per OS. GitHub's 10 GB cache limit is nearly full (all three models on
-    Windows and macOS).
-  - Last run (2026-11-21): all green on Windows and macOS for every checkpoint.
+  - Models (0.8–1 GB each) and ORT are cached per OS. GitHub caches are branch-scoped: a branch
+    can restore its own caches and those made on `main`, nothing else. Every model cache so far
+    was made on a feature branch that is now deleted (`load-dynamic-runtime`,
+    `parity-typed-decisions`), so the next run on a new branch downloads the models again.
+    Running the workflow once on `main` makes caches every branch can use.
+  - The repo's caches total about 10.7 GB (2026-11-22), over GitHub's 10 GB limit, so GitHub is
+    evicting the least recently used ones. Deleting the stale model caches would free about
+    8 GB: `gh cache list`, `gh cache delete <id>`.
+  - Last runs: 2026-11-21, all green on Windows and macOS for every checkpoint (core parity);
+    2026-11-22, typed-decisions with all parity cases on both, green.
 - `pkgdown.yaml`: builds the site; deploys on `main` and on releases.
 
 ## Test coverage gaps
@@ -168,6 +189,7 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Vignettes: edit `vignettes/*.Rmd.orig` (and `vignettes/articles/*.Rmd.orig`), then run
   `Rscript data-raw/knit_vignettes.R [name ...]` after installing the current layaR. This needs
   models and takes a while for the benchmarks.
+  - All vignettes were last knitted on 2026-11-22 with layaR 0.2.0 (PR #17).
   - Knit the benchmarks (`models-and-performance`) on an idle machine: closing a browser or
     chat app isn't enough if it keeps running in the background. Benchmark tables are noisy;
     check that the prose still matches the numbers after each knit.
