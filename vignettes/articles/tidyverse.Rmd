@@ -321,7 +321,7 @@ vignettes:
 
 ``` r
 batch |> map_dbl(\(r) r$answers$churn_risk$noul)
-#> [1] 0.6003 0.5041 0.0227 0.9880 0.0034 0.9800
+#> [1] 0.6004 0.5041 0.0227 0.9880 0.0034 0.9800
 batch |> map_chr(\(r) r$answers$department$choice)
 #> [1] "billing"   "technical" "sales"     "technical" "technical" "technical"
 ```

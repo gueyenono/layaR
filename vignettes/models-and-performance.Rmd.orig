@@ -123,7 +123,8 @@ below, with the multilingual checkpoint.
 
 ```{r}
 c(cpu = sub(".*: *", "", grep("model name", readLines("/proc/cpuinfo"), value = TRUE)[1]),
-  cores = parallel::detectCores())
+  cores = parallel::detectCores(),
+  physical_cores = sub(".*: *", "", grep("cpu cores", readLines("/proc/cpuinfo"), value = TRUE)[1]))
 ```
 
 ```{r}
@@ -166,7 +167,7 @@ opts <- layaR:::predict_options(NULL, NULL, NULL, NULL)
 overhead <- bench::mark(
   laya_predict = laya_predict(state, qs, engine = engine),
   rust_only = layaR:::rs_predict(ptr, state_json, qs_json, opts),
-  check = FALSE, min_iterations = 30
+  check = FALSE, min_iterations = 100
 )
 overhead[, c("expression", "min", "median")]
 ```
@@ -206,7 +207,9 @@ option to the best one.
 Even with the default batch size, `laya_predict_batch()` is the better tool
 for many texts than a loop: it checks the questions once, shows a progress
 bar, and stops cleanly when interrupted. `chunk_size` only decides how often
-R gets control back for that; it barely changes throughput:
+R gets control back for that; it doesn't change throughput in any consistent
+way. The differences below are run-to-run noise, and which size comes out
+fastest changes from one run to the next:
 
 ```{r, warning = FALSE}
 chunks <- bench::mark(
@@ -216,7 +219,7 @@ chunks <- bench::mark(
                                          progress = FALSE),
   `chunk_size = 256` = laya_predict_batch(texts, qs, engine = engine, chunk_size = 256,
                                           progress = FALSE),
-  check = FALSE, min_iterations = 2, filter_gc = FALSE
+  check = FALSE, min_iterations = 3, filter_gc = FALSE
 )
 data.frame(method = as.character(chunks$expression),
            texts_per_second = round(length(texts) / as.numeric(chunks$median), 1))
@@ -238,6 +241,14 @@ by_threads <- do.call(rbind, lapply(threads, function(n) {
 by_threads
 ```
 
+The default, one thread per physical core, is usually the best setting. Going
+past the physical cores, for example to `parallel::detectCores()` on a CPU with
+hyperthreading, adds no speed: the extra threads share cores with the others,
+and with the ONNX Runtime build layaR downloads they can make predictions much
+slower. On Windows and macOS, `parallel::detectCores(logical = FALSE)` gives
+the number of physical cores; on Linux it counts logical CPUs too, so check
+"Core(s) per socket" in the output of `lscpu` instead.
+
 ### Asking several questions at once
 
 All the questions about a text are answered in one forward pass, but their
@@ -254,7 +265,7 @@ n_questions <- bench::mark(
   `3 questions, one call` = laya_predict(texts[1], qs, engine = engine),
   `triage preset (5 questions)` = laya_predict(list(message = texts[1]), laya_preset("triage"),
                                                engine = engine),
-  check = FALSE, min_iterations = 20
+  check = FALSE, min_iterations = 50
 )
 n_questions[, c("expression", "median")]
 laya_engine_close(engine)
