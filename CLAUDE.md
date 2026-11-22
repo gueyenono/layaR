@@ -168,8 +168,11 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Vignettes: edit `vignettes/*.Rmd.orig` (and `vignettes/articles/*.Rmd.orig`), then run
   `Rscript data-raw/knit_vignettes.R [name ...]` after installing the current layaR. This needs
   models and takes a while for the benchmarks.
-  - The 0.2.0 runtime prose was edited in both the `.orig` and the knitted `.Rmd` files, but
-    the vignettes weren't re-knitted.
+  - Knit the benchmarks (`models-and-performance`) on an idle machine: closing a browser or
+    chat app isn't enough if it keeps running in the background. Benchmark tables are noisy;
+    check that the prose still matches the numbers after each knit.
+  - Prose-only fixes can be made in both the `.orig` and the knitted `.Rmd` without knitting
+    again.
 - Add each new exported function to `_pkgdown.yml`'s reference index.
 - After any dependency change, regenerate `LICENSE.note` with `rextendr::write_license_note()`.
   Then re-add the hand-written tail: ORT is not included, and the test fixtures are Apache-2.0
