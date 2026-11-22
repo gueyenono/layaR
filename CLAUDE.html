@@ -50,7 +50,7 @@
 <li>Notes about the maintainer’s own machine (paths, Nix setup) are in <code>CLAUDE.local.md</code>, which is not committed.</li>
 </ul><div class="section level2">
 <h2 id="state-2026-11-22">State (2026-11-22)<a class="anchor" aria-label="anchor" href="#state-2026-11-22"></a></h2>
-<ul><li><p><strong>Latest release: v0.2.0</strong> (2026-11-21). <code>main</code> is at <code>0.2.0.9000</code> (development). Since the release, <code>main</code> gained only tests and docs: the typed-decisions parity fixture (PR #16), vignettes re-knitted with 0.2.0 plus advice on threads (PR #17), and these notes (PRs #14, #15). <code>NEWS.md</code>’s development section is still empty.</p></li>
+<ul><li><p><strong>Latest release: v0.2.0</strong> (2026-11-21). <code>main</code> is at <code>0.2.0.9000</code> (development). Since the release, <code>main</code> gained tests and docs (the typed-decisions parity fixture, PR #16; vignettes re-knitted with 0.2.0 plus advice on threads, PR #17; these notes, PRs #14, #15, #18, #19) and one user-visible change: the declared Rust minimum is now 1.88, the real one (PR #20, the only entry so far in <code>NEWS.md</code>’s development section).</p></li>
 <li><p>0.2.0 switched to loading ORT at run time (<code>load-dynamic</code>, PR #12). Before that, ORT was linked statically and downloaded during the build, which broke Windows and Intel Macs.</p></li>
 <li>
 <p><strong>Platforms:</strong></p>
@@ -190,7 +190,8 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <h2 id="upstream-pins">Upstream pins<a class="anchor" aria-label="anchor" href="#upstream-pins"></a></h2>
 <ul><li>
 <code>laya-onnx</code> is pinned to tag <strong>v0.5.1</strong> (commit <code>090c540</code>), with <code>default-features = false</code> and <code>features = ['load-dynamic']</code>.
-<ul><li>Its <code>download</code> feature stays off: models are downloaded from R.</li>
+<ul><li>laya v0.5.2 (2026-11-21) changed only Python code, docs and tests, nothing under <code>laya-rust/</code>, so the pin stays at v0.5.1 (checked 2026-11-22). Before bumping, check whether the new tag touches <code>laya-rust/</code>: <code>gh api repos/NandhaKishorM/laya/compare/&lt;old&gt;...&lt;new&gt; -q '.files[].filename'</code>.</li>
+<li>Its <code>download</code> feature stays off: models are downloaded from R.</li>
 <li>Keep <code>LAYA_ONNX_REV</code> in <code>src/rust/src/lib.rs</code> in sync.</li>
 </ul></li>
 <li>
@@ -204,6 +205,12 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <strong>Upstream asks</strong> (<code>plan/upstream-issues.md</code>):
 <ul><li>U1, publish ONNX exports on Hugging Face (laya#1504): still open. layaR downloads from its own re-host instead: <a href="https://huggingface.co/gueyenono/laya-onnx" class="external-link uri">https://huggingface.co/gueyenono/laya-onnx</a> (unchanged Apache-2.0 weights).</li>
 <li>U2, <code>load-dynamic</code> (laya#1505): done.</li>
+<li>U6, move <code>laya-onnx</code> to ort rc.15 (laya#1527, filed 2026-11-22): open. When it lands:
+<ol style="list-style-type: decimal"><li>bump <code>ort</code> to the same version (<code>=2.0.0-rc.15</code> or later) in <code>src/rust/Cargo.toml</code>;</li>
+<li>adapt <code>runtime.rs</code> (<code>init_from(path)?.build()?</code> returns the environment) and pass the environment to <code>laya-onnx</code> however upstream exposes it;</li>
+<li>raise the Rust minimum to 1.92 (<code>DESCRIPTION</code>, <code>rust-version</code>, README);</li>
+<li>update the “ort rc.13 bug” note in the ONNX Runtime section.</li>
+</ol></li>
 <li>U3–U5: not filed.</li>
 </ul></li>
 </ul></div>
