@@ -2,6 +2,10 @@
 
 ## layaR (development version)
 
+- Building from source needs rustc 1.88 or newer (previously stated as
+  1.85, which the `ort` and `libloading` crates already didn’t build
+  with).
+
 ## layaR 0.2.0
 
 - layaR now loads ONNX Runtime when the first engine is created instead

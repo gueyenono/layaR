@@ -74,7 +74,7 @@
 <p><strong>Open items:</strong></p>
 <ul><li>Install the 0.2.0 binary from r-universe on Windows and macOS (needs a real machine).</li>
 <li>Linux arm64 is untested.</li>
-<li>Ask upstream to move <code>laya-onnx</code> to ort rc.15+ (fixes the failed-load bug below); not filed.</li>
+<li>Upstream laya#1527 (filed 2026-11-22) asks <code>laya-onnx</code> to move to ort rc.15, which fixes the failed-load bug below. rc.15 needs a code change in <code>laya-onnx</code> (<code>Session::builder</code> takes an <code>Environment</code>) and in layaR’s <code>runtime.rs</code> (<code>init_from(path)?.build()?</code> returns the environment), and Rust 1.92.</li>
 <li>CRAN (next item).</li>
 </ul></li>
 <li><p><strong>CRAN:</strong> not submitted. The blocker (ORT downloaded at build time) is gone. What’s left is plan §9.4 “Other CRAN checklist items” and Phase 7: vendoring (<code>rextendr::vendor_pkgs()</code>), tarball size, <code>cran-comments.md</code>, and win-builder/rhub checks.</p></li>
@@ -131,7 +131,7 @@
 </ul></div>
 <div class="section level2">
 <h2 id="build-and-test">Build and test<a class="anchor" aria-label="anchor" href="#build-and-test"></a></h2>
-<ul><li>Since 0.2.0, building needs only Rust (rustc &gt;= 1.85): no OpenSSL and no network beyond fetching crates.</li>
+<ul><li>Since 0.2.0, building needs only Rust (rustc &gt;= 1.88): no OpenSSL and no network beyond fetching crates.</li>
 <li>Install: <code>R CMD INSTALL .</code>. The release build with LTO takes a few minutes; <code>src/rust/target</code> is git-ignored and can grow to several GB.</li>
 <li>Docs and NAMESPACE: <code>Rscript -e 'devtools::document()'</code>.</li>
 <li>Tests: <code>Rscript -e 'devtools::test()'</code>. With a model installed, set <code>NOT_CRAN=true</code> so parity runs.

@@ -42,7 +42,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="layar-development-version">layaR (development version)<a class="anchor" aria-label="anchor" href="#layar-development-version"></a></h2>
-</div>
+<ul><li>Building from source needs rustc 1.88 or newer (previously stated as 1.85, which the <code>ort</code> and <code>libloading</code> crates already didn’t build with).</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="layar-020">layaR 0.2.0<a class="anchor" aria-label="anchor" href="#layar-020"></a></h2>
 <ul><li>layaR now loads ONNX Runtime when the first engine is created instead of building it in, using the <code>load-dynamic</code> feature that <code>laya-onnx</code> gained for layaR (NandhaKishorM/laya#1505).

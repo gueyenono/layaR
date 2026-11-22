@@ -30,7 +30,7 @@ install.packages("layaR", repos = c("https://gueyenono.r-universe.dev",
 ```
 
 Building from source, on Linux or with `install_github()`, needs a Rust
-toolchain (rustc 1.85 or newer). On Windows it also needs
+toolchain (rustc 1.88 or newer). On Windows it also needs
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) and Rust’s
 `x86_64-pc-windows-gnu` target.
 
