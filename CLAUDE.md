@@ -14,9 +14,10 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 ## State (2026-11-22)
 
 - **Latest release: v0.2.0** (2026-11-21). `main` is at `0.2.0.9000` (development). Since the
-  release, `main` gained only tests and docs: the typed-decisions parity fixture (PR #16),
-  vignettes re-knitted with 0.2.0 plus advice on threads (PR #17), and these notes (PRs #14,
-  #15). `NEWS.md`'s development section is still empty.
+  release, `main` gained tests and docs (the typed-decisions parity fixture, PR #16; vignettes
+  re-knitted with 0.2.0 plus advice on threads, PR #17; these notes, PRs #14, #15, #18, #19) and
+  one user-visible change: the declared Rust minimum is now 1.88, the real one (PR #20, the only
+  entry so far in `NEWS.md`'s development section).
 - 0.2.0 switched to loading ORT at run time (`load-dynamic`, PR #12). Before that, ORT was linked
   statically and downloaded during the build, which broke Windows and Intel Macs.
 - **Platforms:**
@@ -143,6 +144,10 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 
 - `laya-onnx` is pinned to tag **v0.5.1** (commit `090c540`), with `default-features = false`
   and `features = ['load-dynamic']`.
+  - laya v0.5.2 (2026-11-21) changed only Python code, docs and tests, nothing under
+    `laya-rust/`, so the pin stays at v0.5.1 (checked 2026-11-22). Before bumping, check whether
+    the new tag touches `laya-rust/`:
+    `gh api repos/NandhaKishorM/laya/compare/<old>...<new> -q '.files[].filename'`.
   - Its `download` feature stays off: models are downloaded from R.
   - Keep `LAYA_ONNX_REV` in `src/rust/src/lib.rs` in sync.
 - **Upgrading:**
@@ -155,6 +160,12 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
     own re-host instead: https://huggingface.co/gueyenono/laya-onnx (unchanged Apache-2.0
     weights).
   - U2, `load-dynamic` (laya#1505): done.
+  - U6, move `laya-onnx` to ort rc.15 (laya#1527, filed 2026-11-22): open. When it lands:
+    1. bump `ort` to the same version (`=2.0.0-rc.15` or later) in `src/rust/Cargo.toml`;
+    2. adapt `runtime.rs` (`init_from(path)?.build()?` returns the environment) and pass the
+       environment to `laya-onnx` however upstream exposes it;
+    3. raise the Rust minimum to 1.92 (`DESCRIPTION`, `rust-version`, README);
+    4. update the "ort rc.13 bug" note in the ONNX Runtime section.
   - U3–U5: not filed.
 
 ## CI (.github/workflows)
