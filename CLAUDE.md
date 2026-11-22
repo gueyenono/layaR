@@ -212,17 +212,17 @@ prediction time.
     `gh workflow run model-tests.yaml --ref <branch> -f os=windows-latest|macos-latest|ubuntu-latest|all -f checkpoint=multilingual|english|typed-decisions|all -f parity=core|all`.
   - Models (0.8–1 GB each) and ORT are cached per OS. GitHub caches are
     branch-scoped: a branch can restore its own caches and those made on
-    `main`, nothing else. Every model cache so far was made on a feature
-    branch that is now deleted (`load-dynamic-runtime`,
-    `parity-typed-decisions`), so the next run on a new branch downloads
-    the models again. Running the workflow once on `main` makes caches
-    every branch can use.
-  - The repo’s caches total about 10.7 GB (2026-11-22), over GitHub’s 10
-    GB limit, so GitHub is evicting the least recently used ones.
-    Deleting the stale model caches would free about 8 GB:
-    `gh cache list`, `gh cache delete <id>`.
-  - Last runs: 2026-11-21, all green on Windows and macOS for every
-    checkpoint (core parity); 2026-11-22, typed-decisions with all
+    `main`, nothing else. All six model caches (three checkpoints on
+    Windows and macOS) were made on `main` on 2026-11-22, so any branch
+    can use them. After bumping a model cache key, run the workflow once
+    on `main` (`--ref main`) so the new caches are shared too.
+  - The repo’s caches total about 8 GB (2026-11-22), under GitHub’s 10
+    GB limit. Over the limit, GitHub evicts the least recently used
+    caches. Model caches saved by a feature branch are wasted space once
+    the branch is deleted: find them with `gh cache list` and delete
+    them with `gh cache delete <id>`.
+  - Last runs: 2026-11-22 on `main`, all green on Windows and macOS for
+    every checkpoint (core parity); 2026-11-22, typed-decisions with all
     parity cases on both, green.
 - `pkgdown.yaml`: builds the site; deploys on `main` and on releases.
 

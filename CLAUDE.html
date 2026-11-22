@@ -218,9 +218,9 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <li>
 <code>model-tests.yaml</code>: manual. It also runs on PRs that change the workflow file.
 <ul><li>Start it with <code>gh workflow run model-tests.yaml --ref &lt;branch&gt; -f os=windows-latest|macos-latest|ubuntu-latest|all -f checkpoint=multilingual|english|typed-decisions|all -f parity=core|all</code>.</li>
-<li>Models (0.8–1 GB each) and ORT are cached per OS. GitHub caches are branch-scoped: a branch can restore its own caches and those made on <code>main</code>, nothing else. Every model cache so far was made on a feature branch that is now deleted (<code>load-dynamic-runtime</code>, <code>parity-typed-decisions</code>), so the next run on a new branch downloads the models again. Running the workflow once on <code>main</code> makes caches every branch can use.</li>
-<li>The repo’s caches total about 10.7 GB (2026-11-22), over GitHub’s 10 GB limit, so GitHub is evicting the least recently used ones. Deleting the stale model caches would free about 8 GB: <code>gh cache list</code>, <code>gh cache delete &lt;id&gt;</code>.</li>
-<li>Last runs: 2026-11-21, all green on Windows and macOS for every checkpoint (core parity); 2026-11-22, typed-decisions with all parity cases on both, green.</li>
+<li>Models (0.8–1 GB each) and ORT are cached per OS. GitHub caches are branch-scoped: a branch can restore its own caches and those made on <code>main</code>, nothing else. All six model caches (three checkpoints on Windows and macOS) were made on <code>main</code> on 2026-11-22, so any branch can use them. After bumping a model cache key, run the workflow once on <code>main</code> (<code>--ref main</code>) so the new caches are shared too.</li>
+<li>The repo’s caches total about 8 GB (2026-11-22), under GitHub’s 10 GB limit. Over the limit, GitHub evicts the least recently used caches. Model caches saved by a feature branch are wasted space once the branch is deleted: find them with <code>gh cache list</code> and delete them with <code>gh cache delete &lt;id&gt;</code>.</li>
+<li>Last runs: 2026-11-22 on <code>main</code>, all green on Windows and macOS for every checkpoint (core parity); 2026-11-22, typed-decisions with all parity cases on both, green.</li>
 </ul></li>
 <li>
 <code>pkgdown.yaml</code>: builds the site; deploys on <code>main</code> and on releases.</li>
