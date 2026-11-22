@@ -47,6 +47,7 @@
 </li>
 <li>Upstream: <a href="https://github.com/NandhaKishorM/laya" class="external-link uri">https://github.com/NandhaKishorM/laya</a> (the <code>laya-rust/</code> folder is <code>laya-onnx</code>).</li>
 <li>Design history, decisions and roadmap: <code>plan/layaR.md</code> (long; read the section you need). Upstream asks and their status: <code>plan/upstream-issues.md</code>.</li>
+<li>Notes about the maintainer’s own machine (paths, Nix setup) are in <code>CLAUDE.local.md</code>, which is not committed.</li>
 </ul><div class="section level2">
 <h2 id="state-2026-11-21">State (2026-11-21)<a class="anchor" aria-label="anchor" href="#state-2026-11-21"></a></h2>
 <ul><li><p><strong>Latest release: v0.2.0</strong> (2026-11-21). <code>main</code> is at <code>0.2.0.9000</code> (development).</p></li>
@@ -110,7 +111,7 @@
 <li>
 <code>vignettes/*.Rmd</code> are <strong>precomputed</strong>: edit the <code>.Rmd.orig</code> files, then knit them (see “Docs”).</li>
 <li>
-<code>laya-repo/</code>: a local clone of upstream laya, ignored by git and by <code>R CMD build</code>. Its golden tests are the fixture source. It’s at commit <code>80a1da1</code> (0.4.34), older than the pinned v0.5.1, which made no API changes. git refuses to run there (“dubious ownership”); use <code>git -c safe.directory='*' -C laya-repo ...</code>.</li>
+<code>laya-repo/</code>: a local clone of upstream laya (<a href="https://github.com/NandhaKishorM/laya" class="external-link uri">https://github.com/NandhaKishorM/laya</a>), ignored by git and by <code>R CMD build</code>. Its golden tests (<code>laya-rust/tests/golden/</code>) are the fixture source; clone it there to regenerate fixtures. The current fixtures came from commit <code>80a1da1</code> (0.4.34), older than the pinned v0.5.1, which made no API changes.</li>
 <li>
 <code>data-raw/</code>: dev scripts.
 <ul><li>
@@ -122,12 +123,8 @@
 </ul></li>
 </ul></div>
 <div class="section level2">
-<h2 id="build-and-test-on-this-machine">Build and test on this machine<a class="anchor" aria-label="anchor" href="#build-and-test-on-this-machine"></a></h2>
-<ul><li>The folder is local disk (<code>~/Drives/My_Drive</code> is not Google Drive); develop in place. It’s owned by root with mode 777, so <code>sed -i</code> prints harmless “preserving permissions” warnings.</li>
-<li>cargo is at <code>~/.cargo/bin</code>, which isn’t always on the tool shell’s PATH: <code>export PATH=$HOME/.cargo/bin:$PATH</code>.</li>
-<li>Since 0.2.0, building needs only Rust: no OpenSSL and no network beyond fetching crates. <code>RUSTFLAGS</code> was removed from <code>~/home-manager/home.nix</code>. <code>openssl.dev</code> and <code>PKG_CONFIG_PATH</code> are still there but layaR doesn’t need them.</li>
-<li>The released layaR is installed through Nix: <code>layaR_gh</code> in <code>~/home-manager/modules/R/R-packages-list.nix</code>, pinned by commit with a source hash and a <code>fetchCargoVendor</code> hash. To update it, change <code>rev</code> and <code>hash</code>, set the vendor hash to <code>pkgs.lib.fakeHash</code>, build to get the real one, then run <code>hms</code>.</li>
-<li>A plain <code>R CMD INSTALL .</code> puts a dev build in <code>~/R/x86_64-pc-linux-gnu-library/4.6</code>, which comes first in <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code> and shadows the Nix copy. Install dev builds with <code>-l &lt;scratch dir&gt;</code> instead, or delete them afterwards.</li>
+<h2 id="build-and-test">Build and test<a class="anchor" aria-label="anchor" href="#build-and-test"></a></h2>
+<ul><li>Since 0.2.0, building needs only Rust (rustc &gt;= 1.85): no OpenSSL and no network beyond fetching crates.</li>
 <li>Install: <code>R CMD INSTALL .</code>. The release build with LTO takes a few minutes; <code>src/rust/target</code> is git-ignored and can grow to several GB.</li>
 <li>Docs and NAMESPACE: <code>Rscript -e 'devtools::document()'</code>.</li>
 <li>Tests: <code>Rscript -e 'devtools::test()'</code>. With a model installed, set <code>NOT_CRAN=true</code> so parity runs.
@@ -136,7 +133,7 @@
 <li>
 <code>LAYAR_TEST_RUNTIME=true</code> makes the tests download ORT when it’s missing, and fail rather than skip if it won’t load.</li>
 </ul></li>
-<li>Local models are in <code>~/.cache/R/layaR/onnx/{multilingual,english,typed-decisions}</code> (the default <code><a href="reference/laya_model_root.html">laya_model_root()</a></code>). ORT 1.28.0 is in <code>~/.local/share/R/layaR/onnxruntime/1.28.0/</code>.</li>
+<li>By default models live in <code>tools::R_user_dir("layaR","cache")/onnx/&lt;checkpoint&gt;</code> (see <code><a href="reference/laya_model_root.html">laya_model_root()</a></code>) and ORT in <code>tools::R_user_dir("layaR","data")/onnxruntime/&lt;version&gt;/</code>.</li>
 <li>
 <code>test-bridge.R</code>’s <code>model_dir()</code> hard-codes <code>R_user_dir("layaR","cache")/onnx/multilingual</code>. It ignores <code>layaR.model_root</code>.</li>
 <li>Check: <code>Rscript -e 'devtools::check()'</code>. Site: <code><a href="https://pkgdown.r-lib.org/reference/check_pkgdown.html" class="external-link">pkgdown::check_pkgdown()</a></code> and <code><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">pkgdown::build_site()</a></code>.</li>
