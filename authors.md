@@ -14,15 +14,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/gueyenono/layaR/blob/v0.2.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/gueyenono/layaR/blob/main/DESCRIPTION)
 
 Ghislain G (2026). *layaR: Local Laya Decision Models via Rust*. R
-package version 0.2.0, <https://gueyenono.github.io/layaR/>.
+package version 0.2.0.9000, <https://gueyenono.github.io/layaR/>.
 
     @Manual{,
       title = {layaR: Local Laya Decision Models via Rust},
       author = {G. Nono Ghislain},
       year = {2026},
-      note = {R package version 0.2.0},
+      note = {R package version 0.2.0.9000},
       url = {https://gueyenono.github.io/layaR/},
     }
