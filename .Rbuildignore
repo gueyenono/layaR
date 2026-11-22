@@ -15,3 +15,4 @@
 ^vignettes/.*\.Rmd\.orig$
 ^vignettes/articles$
 ^CLAUDE\.md$
+^CLAUDE\.local\.md$
