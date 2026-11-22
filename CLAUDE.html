@@ -49,19 +49,19 @@
 <li>Design history, decisions and roadmap: <code>plan/layaR.md</code> (long; read the section you need). Upstream asks and their status: <code>plan/upstream-issues.md</code>.</li>
 <li>Notes about the maintainer’s own machine (paths, Nix setup) are in <code>CLAUDE.local.md</code>, which is not committed.</li>
 </ul><div class="section level2">
-<h2 id="state-2026-11-21">State (2026-11-21)<a class="anchor" aria-label="anchor" href="#state-2026-11-21"></a></h2>
-<ul><li><p><strong>Latest release: v0.2.0</strong> (2026-11-21). <code>main</code> is at <code>0.2.0.9000</code> (development).</p></li>
+<h2 id="state-2026-11-22">State (2026-11-22)<a class="anchor" aria-label="anchor" href="#state-2026-11-22"></a></h2>
+<ul><li><p><strong>Latest release: v0.2.0</strong> (2026-11-21). <code>main</code> is at <code>0.2.0.9000</code> (development). Since the release, <code>main</code> gained only tests and docs: the typed-decisions parity fixture (PR #16), vignettes re-knitted with 0.2.0 plus advice on threads (PR #17), and these notes (PRs #14, #15). <code>NEWS.md</code>’s development section is still empty.</p></li>
 <li><p>0.2.0 switched to loading ORT at run time (<code>load-dynamic</code>, PR #12). Before that, ORT was linked statically and downloaded during the build, which broke Windows and Intel Macs.</p></li>
 <li>
 <p><strong>Platforms:</strong></p>
 <table class="table"><colgroup><col width="50%"><col width="50%"></colgroup><thead><tr><th>Platform</th>
 <th>Status</th>
 </tr></thead><tbody><tr><td>Linux x86_64</td>
-<td>Supported. CI, plus full parity (<code>LAYAR_PARITY=all</code>) run locally (english, multilingual).</td>
+<td>Supported. CI, plus full parity (<code>LAYAR_PARITY=all</code>) run locally for all three checkpoints.</td>
 </tr><tr><td>macOS arm64</td>
-<td>Supported. CI, plus model tests via <code>model-tests.yaml</code>.</td>
+<td>Supported. CI, plus model tests and parity for all three checkpoints via <code>model-tests.yaml</code>.</td>
 </tr><tr><td>Windows x64</td>
-<td>Supported since 0.2.0. CI, plus model tests via <code>model-tests.yaml</code>.</td>
+<td>Supported since 0.2.0. CI, plus model tests and parity for all three checkpoints via <code>model-tests.yaml</code>.</td>
 </tr><tr><td>Linux arm64</td>
 <td>Should work (the ORT download covers it), but untested.</td>
 </tr><tr><td>Intel Mac</td>
@@ -70,6 +70,13 @@
 <td>Not supported.</td>
 </tr></tbody></table></li>
 <li><p><strong>r-universe:</strong> builds only GitHub <em>releases</em> (registry <code>gueyenono/gueyenono.r-universe.dev</code>, <code>"branch": "*release"</code>), not <code>main</code>; it picks up a release in about an hour. 0.2.0 built (2026-11-21) for Linux, macOS (arm64 and x86_64) and Windows (x86_64 and arm64); only wasm fails. Windows arm64 and Intel Mac binaries build, but have no ORT download. A Linux install from r-universe was verified; Windows and macOS installs from r-universe are not yet. Status: <a href="https://gueyenono.r-universe.dev/api/packages/layaR" class="external-link uri">https://gueyenono.r-universe.dev/api/packages/layaR</a></p></li>
+<li>
+<p><strong>Open items:</strong></p>
+<ul><li>Install the 0.2.0 binary from r-universe on Windows and macOS (needs a real machine).</li>
+<li>Linux arm64 is untested.</li>
+<li>Ask upstream to move <code>laya-onnx</code> to ort rc.15+ (fixes the failed-load bug below); not filed.</li>
+<li>CRAN (next item).</li>
+</ul></li>
 <li><p><strong>CRAN:</strong> not submitted. The blocker (ORT downloaded at build time) is gone. What’s left is plan §9.4 “Other CRAN checklist items” and Phase 7: vendoring (<code>rextendr::vendor_pkgs()</code>), tarball size, <code>cran-comments.md</code>, and win-builder/rhub checks.</p></li>
 </ul></div>
 <div class="section level2">
@@ -175,6 +182,8 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <li>
 <strong>ort rc.13 bug:</strong> a failed load permanently breaks later loads in that process (uninitialized <code>OnceLock</code>). <code>runtime.rs</code> therefore checks the library itself first (opens, <code>OrtGetApiBase</code>, version) and sets <code>POISONED</code> if <code>ort</code> still fails. ort rc.15 fixed this (commit 0381990), but laya v0.5.1 uses rc.13. If laya moves to rc.15+, the pre-check can stay but the comment should be updated.</li>
 <li>
+<strong>Threads:</strong> with Microsoft’s ORT build, more intra-op threads than physical cores is slow. On a 4-core/8-thread i7-4790K (2026-11-22), 0.2.0 and 0.1.1 (ORT linked in) took the same time at 2 and 4 threads and at the default (one per physical core). At 8 threads 0.2.0 was about 45% slower (about 900 ms against 600 ms for the triage preset). The default never goes past the physical cores. The vignette advises against more, and notes that <code>parallel::detectCores(logical = FALSE)</code> doesn’t count physical cores on Linux.</li>
+<li>
 <strong>Windows:</strong> <code>onnxruntime.dll</code> needs the MSVC runtime (<code>vcruntime140</code>/<code>msvcp140</code>). The <code>runtime_load</code> error mentions the Visual C++ Redistributable.</li>
 </ul></div>
 <div class="section level2">
@@ -209,8 +218,9 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <li>
 <code>model-tests.yaml</code>: manual. It also runs on PRs that change the workflow file.
 <ul><li>Start it with <code>gh workflow run model-tests.yaml --ref &lt;branch&gt; -f os=windows-latest|macos-latest|ubuntu-latest|all -f checkpoint=multilingual|english|typed-decisions|all -f parity=core|all</code>.</li>
-<li>Models are cached per OS. GitHub’s 10 GB cache limit is nearly full (all three models on Windows and macOS).</li>
-<li>Last run (2026-11-21): all green on Windows and macOS for every checkpoint.</li>
+<li>Models (0.8–1 GB each) and ORT are cached per OS. GitHub caches are branch-scoped: a branch can restore its own caches and those made on <code>main</code>, nothing else. Every model cache so far was made on a feature branch that is now deleted (<code>load-dynamic-runtime</code>, <code>parity-typed-decisions</code>), so the next run on a new branch downloads the models again. Running the workflow once on <code>main</code> makes caches every branch can use.</li>
+<li>The repo’s caches total about 10.7 GB (2026-11-22), over GitHub’s 10 GB limit, so GitHub is evicting the least recently used ones. Deleting the stale model caches would free about 8 GB: <code>gh cache list</code>, <code>gh cache delete &lt;id&gt;</code>.</li>
+<li>Last runs: 2026-11-21, all green on Windows and macOS for every checkpoint (core parity); 2026-11-22, typed-decisions with all parity cases on both, green.</li>
 </ul></li>
 <li>
 <code>pkgdown.yaml</code>: builds the site; deploys on <code>main</code> and on releases.</li>
@@ -225,7 +235,8 @@ rc.13 with api-27 requires ORT &gt;= 1.27. Newer ORT versions load fine; older o
 <ul><li>
 <code>README.Rmd</code> → <code>README.md</code>: <code>devtools::build_readme()</code>. It needs a model.</li>
 <li>Vignettes: edit <code>vignettes/*.Rmd.orig</code> (and <code>vignettes/articles/*.Rmd.orig</code>), then run <code>Rscript data-raw/knit_vignettes.R [name ...]</code> after installing the current layaR. This needs models and takes a while for the benchmarks.
-<ul><li>Knit the benchmarks (<code>models-and-performance</code>) on an idle machine: closing a browser or chat app isn’t enough if it keeps running in the background. Benchmark tables are noisy; check that the prose still matches the numbers after each knit.</li>
+<ul><li>All vignettes were last knitted on 2026-11-22 with layaR 0.2.0 (PR #17).</li>
+<li>Knit the benchmarks (<code>models-and-performance</code>) on an idle machine: closing a browser or chat app isn’t enough if it keeps running in the background. Benchmark tables are noisy; check that the prose still matches the numbers after each knit.</li>
 <li>Prose-only fixes can be made in both the <code>.orig</code> and the knitted <code>.Rmd</code> without knitting again.</li>
 </ul></li>
 <li>Add each new exported function to <code>_pkgdown.yml</code>’s reference index.</li>
