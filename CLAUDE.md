@@ -11,13 +11,15 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Notes about the maintainer's own machine (paths, Nix setup) are in `CLAUDE.local.md`, which
   is not committed.
 
-## State (2026-11-22)
+## State (2026-11-23)
 
-- **Latest release: v0.2.0** (2026-11-21). `main` is at `0.2.0.9000` (development). Since the
-  release, `main` gained tests and docs (the typed-decisions parity fixture, PR #16; vignettes
-  re-knitted with 0.2.0 plus advice on threads, PR #17; these notes, PRs #14, #15, #18, #19) and
-  one user-visible change: the declared Rust minimum is now 1.88, the real one (PR #20, the only
-  entry so far in `NEWS.md`'s development section).
+- **Latest release: v0.2.1** (2026-11-23, merge commit `2e192eb` of PR #23). `main` is at
+  `0.2.1.9000` (PR #24); `NEWS.md`'s development section is still empty. 0.2.1 is 0.2.0 plus
+  tests and docs (the typed-decisions parity fixture, PR #16; vignettes re-knitted with 0.2.0 plus
+  advice on threads, PR #17), the real Rust minimum 1.88 (PR #20), and polish before a public
+  announcement (PR #22: README badges, status "experimental", Linux arm64 marked untested,
+  pkgdown development mode, `CLAUDE.md` kept off the site). The GitHub repo description and
+  topics were set the same day.
 - 0.2.0 switched to loading ORT at run time (`load-dynamic`, PR #12). Before that, ORT was linked
   statically and downloaded during the build, which broke Windows and Intel Macs.
 - **Platforms:**
@@ -32,13 +34,14 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   | Windows arm64, wasm | Not supported. |
 
 - **r-universe:** builds only GitHub *releases* (registry `gueyenono/gueyenono.r-universe.dev`,
-  `"branch": "*release"`), not `main`; it picks up a release in about an hour. 0.2.0 built
+  `"branch": "*release"`), not `main`; it picks up a release in about an hour (0.2.0 took 50 minutes). 0.2.0 built
   (2026-11-21) for Linux, macOS (arm64 and x86_64) and Windows (x86_64 and arm64); only wasm
   fails. Windows arm64 and Intel Mac binaries build, but have no ORT download. A Linux install
   from r-universe was verified; Windows and macOS installs from r-universe are not yet. Status:
   https://gueyenono.r-universe.dev/api/packages/layaR
 - **Open items:**
-  - Install the 0.2.0 binary from r-universe on Windows and macOS (needs a real machine).
+  - Check that r-universe built 0.2.1 (released 2026-11-23).
+  - Install the r-universe binary on Windows and macOS (needs a real machine).
   - Linux arm64 is untested.
   - Upstream laya#1527 (filed 2026-11-22) asks `laya-onnx` to move to ort rc.15, which fixes the
     failed-load bug below. rc.15 needs a code change in `laya-onnx` (`Session::builder` takes an
@@ -191,6 +194,11 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   - Last runs: 2026-11-22 on `main`, all green on Windows and macOS for every checkpoint (core
     parity); 2026-11-22, typed-decisions with all parity cases on both, green.
 - `pkgdown.yaml`: builds the site; deploys on `main` and on releases.
+  - `_pkgdown.yml` has `development: mode: auto`: a release version (`X.Y.Z`) builds at the site
+    root, a development version (`X.Y.Z.9000`) under `dev/`. So the root changes only on a release.
+  - pkgdown turns every top-level `.md` into a page and ignores `.Rbuildignore`, so the workflow
+    deletes `CLAUDE.md` before building. The deploy uses `clean: false`, so a page that stops being
+    built stays on `gh-pages` until removed there by hand (as `CLAUDE.html` was on 2026-11-23).
 
 ## Test coverage gaps
 
@@ -215,7 +223,7 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   Then re-add the hand-written tail: ORT is not included, and the test fixtures are Apache-2.0
   from Convai Innovations.
 
-## Releasing (the pattern used for 0.1.1 and 0.2.0)
+## Releasing (the pattern used for 0.1.1, 0.2.0 and 0.2.1)
 
 1. Merge feature PRs into `main` with merge commits (`gh pr merge N --merge`).
 2. Open a branch `release-X.Y.Z` and a PR "Release X.Y.Z". It only changes `Version:` in
