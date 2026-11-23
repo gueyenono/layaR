@@ -2,6 +2,10 @@ url: https://gueyenono.github.io/layaR/
 template:
   bootstrap: 5
 
+# Released versions build at the site root, development versions under dev/.
+development:
+  mode: auto
+
 navbar:
   structure:
     left: [intro, reference, articles, news]
