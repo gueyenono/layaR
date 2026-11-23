@@ -11,6 +11,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
 # layaR
 
 <!-- badges: start -->
+[![r-universe](https://gueyenono.r-universe.dev/layaR/badges/version)](https://gueyenono.r-universe.dev/layaR)
+[![R-CMD-check](https://github.com/gueyenono/layaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gueyenono/layaR/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 layaR runs [Laya](https://github.com/NandhaKishorM/laya) decision models
@@ -23,12 +26,12 @@ It wraps Laya's Rust port (`laya-onnx`) through
 [extendr](https://extendr.github.io/) and runs on ONNX Runtime. No Python
 and no server are needed at prediction time.
 
-> **Status:** early development.
+> **Status:** experimental. The API may still change between releases.
 
 ## Installation
 
-**Platforms.** layaR runs on Linux (x86_64 and arm64), Windows (x64) and
-Macs with Apple silicon. Intel Macs are not supported: Microsoft publishes
+**Platforms.** layaR runs on Linux (x86_64), Windows (x64) and Macs with Apple
+silicon. Linux arm64 should work, but is untested. Intel Macs are not supported: Microsoft publishes
 no ONNX Runtime build for them. layaR still installs there, and runs if you
 supply ONNX Runtime 1.27 or newer yourself (see `?laya_install_runtime`).
 
