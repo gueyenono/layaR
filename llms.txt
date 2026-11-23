@@ -10,14 +10,15 @@ It wraps Laya’s Rust port (`laya-onnx`) through
 [extendr](https://extendr.github.io/) and runs on ONNX Runtime. No
 Python and no server are needed at prediction time.
 
-> **Status:** early development.
+> **Status:** experimental. The API may still change between releases.
 
 ## Installation
 
-**Platforms.** layaR runs on Linux (x86_64 and arm64), Windows (x64) and
-Macs with Apple silicon. Intel Macs are not supported: Microsoft
-publishes no ONNX Runtime build for them. layaR still installs there,
-and runs if you supply ONNX Runtime 1.27 or newer yourself (see
+**Platforms.** layaR runs on Linux (x86_64), Windows (x64) and Macs with
+Apple silicon. Linux arm64 should work, but is untested. Intel Macs are
+not supported: Microsoft publishes no ONNX Runtime build for them. layaR
+still installs there, and runs if you supply ONNX Runtime 1.27 or newer
+yourself (see
 [`?laya_install_runtime`](https://gueyenono.github.io/layaR/reference/laya_install_runtime.md)).
 
 Install from r-universe. On Windows and macOS it gives you a ready-made

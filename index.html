@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,16 +59,17 @@
 <div class="page-header"><h1 id="layar">layaR<a class="anchor" aria-label="anchor" href="#layar"></a>
 </h1></div>
 <!-- badges: start -->
+
 <!-- badges: end -->
 <p>layaR runs <a href="https://github.com/NandhaKishorM/laya" class="external-link">Laya</a> decision models locally from R. You ask typed questions about a piece of text or a record (pick one label, place it on a scale, or say yes/no) and get calibrated probabilities from a single forward pass. Nothing is generated, so there is nothing to parse and nothing to hallucinate.</p>
 <p>It wraps Laya’s Rust port (<code>laya-onnx</code>) through <a href="https://extendr.github.io/" class="external-link">extendr</a> and runs on ONNX Runtime. No Python and no server are needed at prediction time.</p>
 <blockquote>
-<p><strong>Status:</strong> early development.</p>
+<p><strong>Status:</strong> experimental. The API may still change between releases.</p>
 </blockquote>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p><strong>Platforms.</strong> layaR runs on Linux (x86_64 and arm64), Windows (x64) and Macs with Apple silicon. Intel Macs are not supported: Microsoft publishes no ONNX Runtime build for them. layaR still installs there, and runs if you supply ONNX Runtime 1.27 or newer yourself (see <code><a href="reference/laya_install_runtime.html">?laya_install_runtime</a></code>).</p>
+<p><strong>Platforms.</strong> layaR runs on Linux (x86_64), Windows (x64) and Macs with Apple silicon. Linux arm64 should work, but is untested. Intel Macs are not supported: Microsoft publishes no ONNX Runtime build for them. layaR still installs there, and runs if you supply ONNX Runtime 1.27 or newer yourself (see <code><a href="reference/laya_install_runtime.html">?laya_install_runtime</a></code>).</p>
 <p>Install from r-universe. On Windows and macOS it gives you a ready-made binary; on Linux it builds from source (see below):</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"layaR"</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://gueyenono.r-universe.dev"</span>,</span>
