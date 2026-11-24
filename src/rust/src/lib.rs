@@ -18,10 +18,10 @@ use laya::{LayaEngine, LayaOptions, LayaPresets, ModelArtifacts, ModelLayout, Mo
 use serde_json::{Value, json};
 use std::sync::{Arc, Mutex};
 
-/// The commit of laya-onnx's pinned tag (v0.5.1); keep in sync with `Cargo.toml`.
-const LAYA_ONNX_REV: &str = "090c540ec4cd0e5c71d539d952f0250e97399fcb";
+/// The pinned laya-onnx commit (test branch for laya#1527); keep in sync with `Cargo.toml`.
+const LAYA_ONNX_REV: &str = "1786354d59a93e0ab3ff0b26647373b55d62eb38";
 const LAYA_ONNX_VERSION: &str = "0.1.0";
-const ORT_VERSION: &str = "2.0.0-rc.13";
+const ORT_VERSION: &str = "2.0.0-rc.15";
 
 /// The engine R holds through an external pointer. The `Option` lets `rs_engine_close` free the
 /// ONNX session (over 1 GB) before R's garbage collector runs the finalizer.
@@ -69,6 +69,7 @@ fn rs_engine_new(model_dir: &str, options_json: &str) -> Robj {
         let o = options::engine_options(options_json)?;
         let engine = LayaEngine::create(LayaOptions {
             model_directory: Some(model_dir.into()),
+            environment: runtime::environment(),
             intra_op_threads: o.intra_op_threads,
             inter_op_threads: o.inter_op_threads,
             lang_temperatures: o.lang_temperatures,
