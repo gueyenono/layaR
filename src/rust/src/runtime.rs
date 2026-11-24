@@ -4,10 +4,10 @@
 //! (R/runtime.R) and loads it here once per process, before the first engine is created.
 //! `ort` can't swap libraries after one is loaded, so later calls report the loaded one.
 //!
-//! `ort` 2.0.0-rc.13 can't recover from a failed load either: its `OnceLock::get_or_try_init`
-//! runs in `Once::call_once_force`, so an error still marks the slot initialized, with nothing
-//! in it, and the next load reads uninitialized memory. So the library is checked here first
-//! (it opens, exports `OrtGetApiBase`, and is new enough), and `ort` only sees one that loads.
+//! `ort` 2.0.0-rc.15 checks the library itself (it opens, exports `OrtGetApiBase`, and is new
+//! enough) and, unlike rc.13, a failed load can be retried in the same process. The environment
+//! built from the loaded library is kept here and handed to every engine
+//! (`LayaOptions::environment`), since `ort` allows one environment per process.
 
 use crate::envelope::{BResult, BridgeError, envelope};
 use extendr_api::prelude::*;
@@ -18,8 +18,8 @@ use std::sync::{Mutex, OnceLock};
 
 /// Path and version of the loaded library.
 static LOADED: OnceLock<(String, String)> = OnceLock::new();
-/// Set when `ort` itself failed to load a library; no further load is safe in this process.
-static POISONED: OnceLock<String> = OnceLock::new();
+/// The process's ONNX Runtime environment, built once the library is loaded.
+static ENVIRONMENT: OnceLock<ort::environment::Environment> = OnceLock::new();
 /// Serializes loading, so two calls can't race between `init_from` and `LOADED.set`.
 static LOAD_LOCK: Mutex<()> = Mutex::new(());
 
@@ -33,39 +33,34 @@ fn load_error(message: String) -> BridgeError {
     BridgeError::new("runtime_load", message)
 }
 
-/// Open the library the way `ort` will and check what `ort`'s loader checks: it opens, exports
-/// `OrtGetApiBase`, and reports a version of at least `1.<ort::MINOR_VERSION>`. Returns that
-/// version string. The handle is dropped afterwards; `ort` takes its own.
-fn check_library(path: &str) -> BResult<String> {
-    // SAFETY: loading a shared library runs its initializers; this is the library `ort` is about
-    // to load anyway. `OrtGetApiBase` takes no arguments, and the version string it points to is
-    // static and owned by ONNX Runtime.
+/// The version string of the library at `path`, which `ort` has already loaded and checked.
+fn library_version(path: &str) -> String {
+    // SAFETY: `ort` loaded this library successfully, so it opens and exports `OrtGetApiBase`;
+    // that takes no arguments, and the version string it points to is static and owned by ONNX
+    // Runtime. Opening it again only bumps the loader's reference count.
     unsafe {
-        let lib = libloading::Library::new(path)
-            .map_err(|e| load_error(format!("failed to load from `{path}`: {e}")))?;
-        let get_base = lib
-            .get::<unsafe extern "system" fn() -> *const ort::sys::OrtApiBase>(b"OrtGetApiBase")
-            .map_err(|_| load_error(format!("`{path}` is not ONNX Runtime (no `OrtGetApiBase`)")))?;
+        let Ok(lib) = libloading::Library::new(path) else { return String::new() };
+        let Ok(get_base) =
+            lib.get::<unsafe extern "system" fn() -> *const ort::sys::OrtApiBase>(b"OrtGetApiBase")
+        else {
+            return String::new();
+        };
         let base = get_base();
         if base.is_null() {
-            return Err(load_error(format!("`{path}` returned no ONNX Runtime API")));
+            return String::new();
         }
         let v = ((*base).GetVersionString)();
-        let version = if v.is_null() {
+        if v.is_null() {
             String::new()
         } else {
             std::ffi::CStr::from_ptr(v).to_string_lossy().into_owned()
-        };
-        // Parsed as `ort` does: the minor version, 0 when unreadable.
-        let minor = version.split('.').nth(1).and_then(|m| m.parse::<u32>().ok()).unwrap_or(0);
-        if minor < ort::MINOR_VERSION {
-            return Err(load_error(format!(
-                "`{path}` is ONNX Runtime {version}; layaR needs 1.{} or newer",
-                ort::MINOR_VERSION
-            )));
         }
-        Ok(version)
     }
+}
+
+/// The environment built when ONNX Runtime was loaded, for `LayaOptions::environment`.
+pub(crate) fn environment() -> Option<ort::environment::Environment> {
+    ENVIRONMENT.get().cloned()
 }
 
 /// Load the ONNX Runtime library at `path`, or report the one already loaded.
@@ -79,21 +74,15 @@ fn rs_runtime_load(path: &str) -> Robj {
         if let Some(loaded) = LOADED.get() {
             return Ok(info_json(loaded));
         }
-        if let Some(why) = POISONED.get() {
-            return Err(load_error(format!(
-                "an earlier attempt to load ONNX Runtime failed ({why}); restart R to try again"
-            )));
+        let builder = ort::init_from(path).map_err(|e| load_error(e.to_string()))?;
+        if ENVIRONMENT.get().is_none() {
+            let env = builder
+                .with_name("layaR")
+                .build()
+                .map_err(|e| load_error(format!("could not create the ONNX Runtime environment: {e}")))?;
+            let _ = ENVIRONMENT.set(env);
         }
-        let version = check_library(path)?;
-        let builder = match ort::init_from(path) {
-            Ok(b) => b,
-            Err(e) => {
-                let _ = POISONED.set(e.to_string());
-                return Err(load_error(e.to_string()));
-            }
-        };
-        builder.with_name("layaR").commit();
-        let loaded = LOADED.get_or_init(|| (path.to_string(), version));
+        let loaded = LOADED.get_or_init(|| (path.to_string(), library_version(path)));
         Ok(info_json(loaded))
     })
 }

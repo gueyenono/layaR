@@ -3,7 +3,7 @@ name = 'laya_r'
 publish = false
 version = '0.1.0'
 edition = '2024'
-rust-version = '1.88'
+rust-version = '1.92'
 
 [lib]
 crate-type = [ 'rlib', 'staticlib' ]
@@ -15,15 +15,15 @@ path = 'document.rs'
 
 [dependencies]
 extendr-api = '0.9.0'
-# laya-onnx is not on crates.io yet. Pinned to laya's v0.5.1 tag (commit 090c540), the first
-# release with the `load-dynamic` feature (PR #1508, NandhaKishorM/laya#1505).
+# laya-onnx is not on crates.io yet. TEST BRANCH: pinned to chetanxrathore's fix/rust-ort-rc15
+# commit for NandhaKishorM/laya#1527 (ort rc.15, `LayaOptions::environment`).
 # `download` is off: models are downloaded from R (plan D7). `load-dynamic`: no ONNX Runtime
 # download or link at build time; R loads the library at runtime (R/runtime.R).
-laya-onnx = { git = 'https://github.com/NandhaKishorM/laya', tag = 'v0.5.1', default-features = false, features = ['load-dynamic'] }
-# Match laya-onnx's own Cargo.lock (ort 2.0.0-rc.13); a caret req would pick a newer rc.
+laya-onnx = { git = 'https://github.com/chetanxrathore/laya', rev = '1786354d59a93e0ab3ff0b26647373b55d62eb38', default-features = false, features = ['load-dynamic'] }
+# Match laya-onnx's own pin (ort 2.0.0-rc.15); a caret req would pick a newer rc.
 # Default features off, or feature unification turns ort's download-binaries back on.
-# rc.13 with api-27 needs ONNX Runtime >= 1.27; keep in sync with `ort_version` in R/runtime.R.
-ort = { version = '=2.0.0-rc.13', default-features = false, features = ['load-dynamic'] }
+# rc.15 with api-27 needs ONNX Runtime >= 1.27; keep in sync with `ort_version` in R/runtime.R.
+ort = { version = '=2.0.0-rc.15', default-features = false, features = ['load-dynamic'] }
 # Verifies the ONNX Runtime download.
 sha2 = '0.10'
 # Reads the loaded ONNX Runtime's version (the same crate and version `ort` loads it with).
