@@ -1,0 +1,70 @@
+# Installs layaR the way a new user would: the binary from r-universe (no
+# checkout, no Rust), then ONNX Runtime and a model on first use, then one
+# prediction. Checks that the published release works, not the code on this
+# branch. Started by hand (`gh workflow run install-check.yaml`); it also runs
+# on pull requests that change this file.
+#
+# Nothing is cached, so the download a new user sees (139 MB of ONNX Runtime
+# plus a 1.3 GB model) is part of the check.
+on:
+  workflow_dispatch:
+    inputs:
+      r-version:
+        description: R version (release, oldrel-1, or a number like 4.5)
+        type: string
+        default: release
+  pull_request:
+    paths: ['.github/workflows/install-check.yaml']
+
+name: install-check.yaml
+
+permissions: read-all
+
+jobs:
+  install-check:
+    runs-on: ${{ matrix.os }}
+
+    name: ${{ matrix.os }} (R ${{ inputs.r-version || 'release' }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ inputs.r-version || 'release' }}
+
+      # type = "binary" fails rather than falling back to a source build, so
+      # this checks that r-universe serves a binary for this R and platform.
+      - name: Install layaR from r-universe
+        shell: Rscript {0}
+        run: |
+          install.packages("layaR", type = "binary",
+                           repos = c("https://gueyenono.r-universe.dev",
+                                     "https://cloud.r-project.org"))
+          d <- packageDescription("layaR")
+          cat("layaR", d$Version, "\nBuilt:", d$Built,
+              "\nRepository:", d$Repository, "\nRemoteSha:", d$RemoteSha, "\n")
+          stopifnot(!is.null(d$Built))
+
+      - name: First use (downloads ONNX Runtime and a model)
+        shell: Rscript {0}
+        run: |
+          library(layaR)
+          t0 <- Sys.time()
+          laya_download_model("multilingual", ask = FALSE)
+          cat("Downloads took", format(round(Sys.time() - t0)), "\n")
+          print(laya_models())
+
+      # A fresh R session, as after a restart.
+      - name: Predict
+        shell: Rscript {0}
+        run: |
+          library(layaR)
+          res <- laya_predict(list(message = "My payment failed twice"),
+                              laya_preset("triage"))
+          print(res)
+          str(laya_runtime_info()[c("loaded", "loaded_path", "loaded_version")])
+          stopifnot(inherits(res, "laya_result"), laya_runtime_info()$loaded)
