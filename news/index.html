@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">layaR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,13 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/gueyenono/layaR/blob/v0.2.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/gueyenono/layaR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.2" id="layar-022">layaR 0.2.2<a class="anchor" aria-label="anchor" href="#layar-022"></a></h2>
+<ul><li>rlang is now a declared dependency. cli needs it for layaR’s messages and errors, but only suggests it, so on a fresh R installation without rlang <code><a href="../reference/laya_download_model.html">laya_download_model()</a></code> and every layaR error failed with “there is no package called ‘rlang’”.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="layar-021">layaR 0.2.1<a class="anchor" aria-label="anchor" href="#layar-021"></a></h2>
 <ul><li>Building from source needs rustc 1.88 or newer (previously stated as 1.85, which the <code>ort</code> and <code>libloading</code> crates already didn’t build with).</li>
