@@ -18,3 +18,9 @@
 #' * `layaR.shared_cache`: `FALSE` stops layaR from looking for models in the
 #'   cache shared with Laya's Rust and TypeScript SDKs.
 "_PACKAGE"
+
+# cli's cli_abort(), cli_warn() and cli_inform() need rlang, which cli only
+# suggests; without it every layaR message or error fails with "there is no
+# package called 'rlang'". The import makes rlang a hard dependency.
+#' @importFrom rlang caller_env
+NULL

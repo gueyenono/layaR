@@ -1,5 +1,10 @@
 # layaR (development version)
 
+* rlang is now a declared dependency. cli needs it for layaR's messages and
+  errors, but only suggests it, so on a fresh R installation without rlang
+  `laya_download_model()` and every layaR error failed with "there is no
+  package called 'rlang'".
+
 # layaR 0.2.1
 
 * Building from source needs rustc 1.88 or newer (previously stated as 1.85,
