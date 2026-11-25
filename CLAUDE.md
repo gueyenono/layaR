@@ -11,15 +11,17 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Notes about the maintainer's own machine (paths, Nix setup) are in `CLAUDE.local.md`, which
   is not committed.
 
-## State (2026-11-23)
+## State (2026-11-25)
 
-- **Latest release: v0.2.1** (2026-11-23, merge commit `2e192eb` of PR #23). `main` is at
-  `0.2.1.9000` (PR #24); `NEWS.md`'s development section is still empty. 0.2.1 is 0.2.0 plus
-  tests and docs (the typed-decisions parity fixture, PR #16; vignettes re-knitted with 0.2.0 plus
-  advice on threads, PR #17), the real Rust minimum 1.88 (PR #20), and polish before a public
-  announcement (PR #22: README badges, status "experimental", Linux arm64 marked untested,
-  pkgdown development mode, `CLAUDE.md` kept off the site). The GitHub repo description and
-  topics were set the same day.
+- **Latest release: v0.2.2** (2026-11-25, merge commit `eac116a` of PR #29). `main` is at
+  `0.2.2.9000`; `NEWS.md`'s development section is still empty. 0.2.2 fixes one bug: rlang
+  wasn't declared (PR #28). cli's `cli_abort()`/`cli_warn()`/`cli_inform()` need it but cli
+  only suggests it, so on a fresh R `laya_download_model()` and every layaR error failed with
+  "there is no package called 'rlang'". The new `install-check.yaml` (PR #27) found it, and
+  0.2.2 passes it on Windows and macOS.
+- 0.2.1 (2026-11-23) was 0.2.0 plus tests and docs, the real Rust minimum 1.88 (PR #20), and
+  polish before a public announcement (PR #22: README badges, status "experimental", pkgdown
+  development mode, `CLAUDE.md` kept off the site).
 - 0.2.0 switched to loading ORT at run time (`load-dynamic`, PR #12). Before that, ORT was linked
   statically and downloaded during the build, which broke Windows and Intel Macs.
 - **Platforms:**
@@ -34,19 +36,20 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   | Windows arm64, wasm | Not supported. |
 
 - **r-universe:** builds only GitHub *releases* (registry `gueyenono/gueyenono.r-universe.dev`,
-  `"branch": "*release"`), not `main`; it picks up a release in about an hour (0.2.0 took 50 minutes). 0.2.0 built
-  (2026-11-21) for Linux, macOS (arm64 and x86_64) and Windows (x86_64 and arm64); only wasm
-  fails. Windows arm64 and Intel Mac binaries build, but have no ORT download. A Linux install
-  from r-universe was verified; Windows and macOS installs from r-universe are not yet. Status:
+  `"branch": "*release"`), not `main`; it picks up a release in about 50 minutes (0.2.0 and 0.2.2 both did). 0.2.2 built
+  (2026-11-25) for all 13 targets: Linux (x86_64, arm64), macOS (arm64, x86_64) and Windows
+  (x86_64, arm64), R 4.5 to 4.7; only wasm fails. Windows arm64 and Intel Mac binaries build,
+  but have no ORT download. Installing the binary and predicting is verified on Windows and
+  macOS (`install-check.yaml`, 2026-11-25) and on Linux (earlier, by hand). Status:
   https://gueyenono.r-universe.dev/api/packages/layaR
 - **Open items:**
-  - Check that r-universe built 0.2.1 (released 2026-11-23).
-  - Install the r-universe binary on Windows and macOS (needs a real machine).
+  - Public announcement (LinkedIn): nothing blocks it since 0.2.2.
   - Linux arm64 is untested.
-  - Upstream laya#1527 (filed 2026-11-22) asks `laya-onnx` to move to ort rc.15, which fixes the
-    failed-load bug below. rc.15 needs a code change in `laya-onnx` (`Session::builder` takes an
-    `Environment`) and in layaR's `runtime.rs` (`init_from(path)?.build()?` returns the
-    environment), and Rust 1.92.
+  - Upstream laya#1527, moving `laya-onnx` to ort rc.15: fixed by laya PR #1539 (chetanxrathore,
+    commit `1786354`), open and awaiting the maintainer's review. layaR's draft PR #26
+    (`test-ort-rc15`, do not merge) pins that commit, keeps the `Environment` in `runtime.rs`
+    and drops the pre-check and `POISONED`. It passed full parity on Linux, macOS and Windows
+    (2026-11-24). Once upstream tags the fix, repin to the tag in a real PR (see U6 below).
   - CRAN (next item).
 - **CRAN:** not submitted. The blocker (ORT downloaded at build time) is gone. What's left is
   plan §9.4 "Other CRAN checklist items" and Phase 7: vendoring (`rextendr::vendor_pkgs()`),
@@ -163,7 +166,8 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
     own re-host instead: https://huggingface.co/gueyenono/laya-onnx (unchanged Apache-2.0
     weights).
   - U2, `load-dynamic` (laya#1505): done.
-  - U6, move `laya-onnx` to ort rc.15 (laya#1527, filed 2026-11-22): open. When it lands:
+  - U6, move `laya-onnx` to ort rc.15 (laya#1527, filed 2026-11-22): laya PR #1539 open;
+    layaR's draft PR #26 already has the changes below. When it lands:
     1. bump `ort` to the same version (`=2.0.0-rc.15` or later) in `src/rust/Cargo.toml`;
     2. adapt `runtime.rs` (`init_from(path)?.build()?` returns the environment) and pass the
        environment to `laya-onnx` however upstream exposes it;
@@ -192,7 +196,7 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
     wasted space once the branch is deleted: find them with `gh cache list` and delete them with
     `gh cache delete <id>`.
   - Last runs: 2026-11-22 on `main`, all green on Windows and macOS for every checkpoint (core
-    parity); 2026-11-22, typed-decisions with all parity cases on both, green.
+    parity); 2026-11-24 on `test-ort-rc15`, every checkpoint with all parity cases on both, green.
 - `install-check.yaml`: manual (`gh workflow run install-check.yaml [-f r-version=oldrel-1]`).
   It also runs on PRs that change the workflow file. On Windows and macOS it installs the
   r-universe *binary* (`type = "binary"`, no checkout, no Rust), downloads ORT and the
@@ -228,7 +232,7 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
   Then re-add the hand-written tail: ORT is not included, and the test fixtures are Apache-2.0
   from Convai Innovations.
 
-## Releasing (the pattern used for 0.1.1, 0.2.0 and 0.2.1)
+## Releasing (the pattern used for 0.1.1, 0.2.0, 0.2.1 and 0.2.2)
 
 1. Merge feature PRs into `main` with merge commits (`gh pr merge N --merge`).
 2. Open a branch `release-X.Y.Z` and a PR "Release X.Y.Z". It only changes `Version:` in
@@ -237,7 +241,9 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 3. Publish the release on that merge commit:
    `gh release create vX.Y.Z --target <sha> --title "layaR X.Y.Z" --notes-file <that NEWS section>`.
    r-universe picks it up within about an hour.
-4. Later, a PR "Start development version X.Y.Z.9000" bumps `DESCRIPTION` and adds a new
+4. Once r-universe shows the new version built (`https://gueyenono.r-universe.dev/api/packages/layaR`),
+   run `gh workflow run install-check.yaml` and check that both jobs are green.
+5. Later, a PR "Start development version X.Y.Z.9000" bumps `DESCRIPTION` and adds a new
    `# layaR (development version)` heading.
 
 ## Conventions
@@ -248,6 +254,9 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
 - Errors: use `laya_abort(msg, kind = ...)`. Every failure is a classed `laya_error_<kind>`.
   Document new kinds in `R/conditions.R`, and test them with
   `expect_error(..., class = "laya_error_<kind>")`.
+- Declare every package layaR needs at run time in `Imports`. CI can't catch a missing one
+  (testthat and friends install most of the tidyverse); `install-check.yaml` can. rlang is
+  imported only because cli's condition functions need it.
 - Options are documented in `R/layaR-package.R`: `layaR.checkpoint`, `layaR.threads`,
   `layaR.model_root`, `layaR.model_repo`, `layaR.onnxruntime`, `layaR.shared_cache`.
 - Each engine holds about 1–1.6 GB. Tests keep one engine alive at a time.
