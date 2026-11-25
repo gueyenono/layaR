@@ -193,6 +193,11 @@ and `laya-onnx` runs the models with ONNX Runtime (ORT). No Python is needed at 
     `gh cache delete <id>`.
   - Last runs: 2026-11-22 on `main`, all green on Windows and macOS for every checkpoint (core
     parity); 2026-11-22, typed-decisions with all parity cases on both, green.
+- `install-check.yaml`: manual (`gh workflow run install-check.yaml [-f r-version=oldrel-1]`).
+  It also runs on PRs that change the workflow file. On Windows and macOS it installs the
+  r-universe *binary* (`type = "binary"`, no checkout, no Rust), downloads ORT and the
+  multilingual model with no caches, and runs a triage prediction. So it tests the published
+  release, not the branch. Run it after each release, once r-universe has built it.
 - `pkgdown.yaml`: builds the site; deploys on `main` and on releases.
   - `_pkgdown.yml` has `development: mode: auto`: a release version (`X.Y.Z`) builds at the site
     root, a development version (`X.Y.Z.9000`) under `dev/`. So the root changes only on a release.
